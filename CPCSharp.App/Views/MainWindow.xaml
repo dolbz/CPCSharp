@@ -1,0 +1,18 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:CPCSharp.ViewModels;assembly=CPCSharp"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="CPCSharp.Views.MainWindow" 
+        xmlns:pages="clr-namespace:CPCSharp"
+        Title="CPCSharp">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+    <StackPanel>
+        <Image Width="640" Height="400" Source="{Binding ScreenBitmap}" />
+        <Button Command="{Binding RenderCpuScreen}" Width="100" Height="100" Content="Snapshot!"/>
+    </StackPanel>
+</Window>
