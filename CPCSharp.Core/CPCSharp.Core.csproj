@@ -5,9 +5,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="OS_464.ROM" />
+    <Content Remove="BASIC_1.0.ROM" />
   </ItemGroup>
   <ItemGroup>
   <EmbeddedResource Include="OS_464.ROM" />
+  <EmbeddedResource Include="BASIC_1.0.ROM" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Z80Sharp\Z80\Z80.csproj" />
