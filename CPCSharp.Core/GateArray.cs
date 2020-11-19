@@ -3,6 +3,7 @@ using System;
 namespace CPCSharp.Core {
 
     public interface IODevice {
+        ushort Address { set; }
         byte Data { get; set; }
         bool ActiveAtAddress(ushort address);
     }
@@ -20,6 +21,12 @@ namespace CPCSharp.Core {
             set {
                 _data = value;
                 ProcessInputData();
+            } 
+        }
+
+        public ushort Address { 
+            set {
+                // TODO
             } 
         }
 

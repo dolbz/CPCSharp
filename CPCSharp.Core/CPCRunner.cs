@@ -57,6 +57,7 @@ namespace CPCSharp.Core
 
         private void SetupIODevices() {
             _ioDevices.Add(_gateArray);
+            _ioDevices.Add(new PPI());
         }
 
         private IODevice GetIoDeviceForAddress(ushort address) {
@@ -81,6 +82,7 @@ namespace CPCSharp.Core
                         if (_cpu.IORQ) {
                             var ioDevice = GetIoDeviceForAddress(_cpu.Address);
                             if (ioDevice != null) {
+                                ioDevice.Address = _cpu.Address;
                                 if (_cpu.RD) {
                                     _cpu.Data = ioDevice.Data;
                                 }
