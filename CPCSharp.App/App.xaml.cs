@@ -1,11 +1,12 @@
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using CPCSharp.App.Views;
 using CPCSharp.Core;
 using CPCSharp.ViewModels;
-using CPCSharp.Views;
 
-namespace CPCSharp
+namespace CPCSharp.App
 {
     public class App : Application
     {
@@ -27,7 +28,10 @@ namespace CPCSharp
                 {
                     DataContext = new MainWindowViewModel(_runner),
                 };
-
+                var debugWindow = new DebugWindow() {
+                    DataContext = new DebugWindowViewModel(_runner)
+                };
+                debugWindow.Show();
             }
 
             base.OnFrameworkInitializationCompleted();

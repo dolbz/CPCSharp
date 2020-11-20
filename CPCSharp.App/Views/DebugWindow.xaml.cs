@@ -4,9 +4,9 @@ using Avalonia.Markup.Xaml;
 
 namespace CPCSharp.App.Views
 {
-    public class MainWindow : Window
+    public class DebugWindow : Window
     {
-        public MainWindow()
+        public DebugWindow()
         {
             InitializeComponent();
         }

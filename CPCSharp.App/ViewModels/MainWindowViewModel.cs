@@ -10,9 +10,9 @@ namespace CPCSharp.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private Bitmap _screenBitmap;
         private CPCRunner _runner;
 
+        private Bitmap _screenBitmap; 
         public Bitmap ScreenBitmap
         {
             get => _screenBitmap;
