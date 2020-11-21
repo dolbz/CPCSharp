@@ -84,11 +84,11 @@ namespace CPCSharp.ViewModels
             var shiftDown = 3 - pixelNum;
 
             var lowBit = (lowNibble >> shiftDown) & 0x1;
-            var highBit = (highNibble >> (shiftDown - 1)) & 0x2;
+            var highBit = (highNibble >> shiftDown) & 0x1;
 
-            var pixelValue = highBit | lowBit;
+            var pixelValue = (highBit << 1) | lowBit;
             return pixelValue;
-        } 
+        }
 
         public void UpdateScreen(Color[,] pixels) {
             var screen = new WriteableBitmap(new PixelSize(320, 200), new Vector(96, 96), PixelFormat.Bgra8888);
