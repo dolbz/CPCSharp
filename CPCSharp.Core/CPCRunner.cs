@@ -164,7 +164,7 @@ namespace CPCSharp.Core
                                     ioDevice.Data = _cpu.Data;
                                 }
                             } else {
-                                Console.WriteLine($"IORQ for unknown IO address: {_cpu.Address:x4}");
+                                Console.WriteLine($"IORQ {(_cpu.RD ? "read" : "write")} for unknown IO address: {_cpu.Address:x4}");
                             }
                         }
                         if (_cpu.MREQ && _cpu.RD) {
