@@ -21,6 +21,7 @@ namespace CPCSharp.Core {
         private int _hsyncsSinceVsyncStarted;
         private bool _vsync;
         public bool VSYNC { 
+            get => _vsync;
             set {
                 var currentValue = _vsync;
                 _vsync = value;

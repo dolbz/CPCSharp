@@ -11,8 +11,8 @@ namespace CPCSharp.Core {
             List<string> lowerRomProgramListing,
             List<string> upperRomProgramListing,
             MemoryReadLocation currentMemoryReadLocation,
-            List<byte> stackContents
-            ) 
+            List<byte> stackContents,
+            double cpuFrequencyMHz) 
         {
             this.WaitingOnBreakpoint = waitingOnBreakpoint;
             this.Cpu = cpuSnapshot;
@@ -21,6 +21,7 @@ namespace CPCSharp.Core {
             this.UpperRomProgramListing = upperRomProgramListing;
             this.MemoryReadLocation = currentMemoryReadLocation;
             this.Stack = stackContents;
+            this.FrequencyMHz = cpuFrequencyMHz;
         }
 
         public bool WaitingOnBreakpoint { get; }
@@ -34,5 +35,7 @@ namespace CPCSharp.Core {
         public List<byte> Stack { get; }
 
         public Z80CpuSnapshot Cpu { get; }
+
+        public double FrequencyMHz { get;}
     }
 }

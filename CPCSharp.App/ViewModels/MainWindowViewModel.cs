@@ -1,4 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Threading;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Timers;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -21,16 +24,8 @@ namespace CPCSharp.ViewModels
 
         public MainWindowViewModel(CPCRunner runner) {
             _runner = runner;
-            
-            //var timer = new Timer(75);
-            //timer.Elapsed += OnUpdate;
-            //timer.Start();
+            _runner.SetRendererListener(RenderCpuScreen);
         }
-
-        // private void OnUpdate(object sender, ElapsedEventArgs elapsedEventArgs)
-        // {
-        //     RenderCpuScreen();
-        // }
 
         private void RenderCpuScreen() {
             _runner.AccessCpuState((cpu, ram) => {

@@ -13,6 +13,5 @@
     </Design.DataContext>
     <StackPanel>
         <Image Width="640" Height="400" Source="{Binding ScreenBitmap}" />
-        <Button Command="{Binding RenderCpuScreen}" Width="100" Height="100" Content="Snapshot!"/>
     </StackPanel>
 </Window>

@@ -26,7 +26,29 @@ namespace CPCSharp.Core {
         public static CPCKey X = new CPCKey { line = 7, bitPos = 7 };
         public static CPCKey Y = new CPCKey { line = 5, bitPos = 3 };
         public static CPCKey Z = new CPCKey { line = 8, bitPos = 7 };
+        public static CPCKey Num0 = new CPCKey { line = 4, bitPos = 0 };
+        public static CPCKey Num1 = new CPCKey { line = 8, bitPos = 0 };
+        public static CPCKey Num2 = new CPCKey { line = 8, bitPos = 1 };
+        public static CPCKey Num3 = new CPCKey { line = 7, bitPos = 1 };
+        public static CPCKey Num4 = new CPCKey { line = 7, bitPos = 0 };
+        public static CPCKey Num5 = new CPCKey { line = 6, bitPos = 1 };
+        public static CPCKey Num6 = new CPCKey { line = 6, bitPos = 0 };
+        public static CPCKey Num7 = new CPCKey { line = 5, bitPos = 1 };
+        public static CPCKey Num8 = new CPCKey { line = 5, bitPos = 0 };
+        public static CPCKey Num9 = new CPCKey { line = 4, bitPos = 1 }; 
+        public static CPCKey ForwardSlash = new CPCKey { line = 3, bitPos = 6 };
+        public static CPCKey BackSlash = new CPCKey { line = 2, bitPos = 6 };
+        public static CPCKey SemiColon = new CPCKey { line = 3, bitPos = 4 };
+        public static CPCKey Colon = new CPCKey { line = 3, bitPos = 5 };
         public static CPCKey Space = new CPCKey { line = 5, bitPos = 7};
+        public static CPCKey Return = new CPCKey { line = 2, bitPos = 2 };
+        public static CPCKey CurUp = new CPCKey { line = 0, bitPos = 0 };
+        public static CPCKey CurDown = new CPCKey { line = 0, bitPos = 2 };
+        public static CPCKey CurLeft = new CPCKey { line = 1, bitPos = 0 };
+        public static CPCKey CurRight = new CPCKey { line = 0, bitPos = 1 };
+        public static CPCKey Shift = new CPCKey { line = 2, bitPos = 5 };
+        public static CPCKey Delete = new CPCKey { line = 9, bitPos = 7 };
+
         public int line { get; private set; }
         public int bitPos { get; private set; }
     }

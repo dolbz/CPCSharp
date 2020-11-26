@@ -56,6 +56,7 @@
       <StackPanel Orientation="Vertical">
         <StackPanel Orientation="Horizontal">
           <TextBlock Text="PC: " /><TextBlock Text="{Binding Snapshot.Cpu.PC, Converter={StaticResource ShortHexValueConverter}}" />
+          <TextBlock Text="Frequency: " /><TextBlock Text="{Binding Snapshot.FrequencyMHz }" /><TextBlock Text="MHz" />
         </StackPanel>
         <TextBlock Text="Stack: " />
         <ItemsControl Items="{Binding Snapshot.Stack}">

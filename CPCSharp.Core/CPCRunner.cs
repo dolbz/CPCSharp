@@ -9,6 +9,11 @@ using System.Collections.Generic;
 
 namespace CPCSharp.Core
 {
+    public struct CycleCountObservation {
+        public double ElapsedMilliseconds { get; set; }
+        public long Count { get; set; }
+    }
+
     public class CPCRunner {
         private static bool _cpuRunning = false;
         private Z80Cpu _cpu = new Z80Cpu();
@@ -31,6 +36,11 @@ namespace CPCSharp.Core
 
         private bool _nextInstructionBreakpoint = false;
         private bool _breakpointHit;
+
+        private Action _renderListener;
+        private Stopwatch stopwatch = Stopwatch.StartNew();
+        private CycleCountObservation previousObservation = new CycleCountObservation();
+        private CycleCountObservation currentObservation = new CycleCountObservation();
         
         public void AccessCpuState(Action<Z80Cpu, byte[]> cpuAction) {
             lock(_cpu.CpuStateLock) {
@@ -153,14 +163,20 @@ namespace CPCSharp.Core
                     stackContents.Add(_ram[currentSp]);
                 }
 
+                var timeDelta = currentObservation.ElapsedMilliseconds-previousObservation.ElapsedMilliseconds;
+                var cycleCountDelta = currentObservation.Count - previousObservation.Count;
+
+                var calculatedMhzFrequency = (cycleCountDelta/timeDelta)/1_000;
+
                 return new MachineStateSnapshot(
-                    _breakpointHit,
-                    cpuSnapshot, 
-                    listing, 
-                    _lowerRomDisassembly, 
-                    _upperRomDisassembly, 
-                    GetCurrentReadLocationForAddress(cpuSnapshot.PC),
-                    stackContents);
+                        _breakpointHit,
+                        cpuSnapshot, 
+                        listing, 
+                        _lowerRomDisassembly, 
+                        _upperRomDisassembly, 
+                        GetCurrentReadLocationForAddress(cpuSnapshot.PC),
+                        stackContents,
+                        calculatedMhzFrequency);
             }
         }
 
@@ -188,6 +204,16 @@ namespace CPCSharp.Core
             return (_cpu.instructions[opcode], byteCount);
         }
 
+        public void SetRendererListener(Action renderListener) {
+            _renderListener = renderListener;
+        }
+
+        private void NotifyRendererOfCompleteScreen() {
+            if (_renderListener != null) {
+                _renderListener(); // TODO change this to pass in a screen buffer once we've got buffering happening
+            }
+        }
+
         public void RunCpu() {
             _cpuRunning = true;
             while (_cpuRunning) {
@@ -198,6 +224,10 @@ namespace CPCSharp.Core
                 lock(_cpu.CpuStateLock) {
                     do {
                         _gateArray.HSYNC = _crtc.HSYNC;
+                        if (_gateArray.VSYNC && !_crtc.VSYNC) { // TODO is this the right time to do this?
+                            // Notify screen renderers that they can draw now
+                            NotifyRendererOfCompleteScreen();
+                        }
                         _gateArray.VSYNC = _crtc.VSYNC;
                         _gateArray.M1 = _cpu.M1;
                         _gateArray.IORQ = _cpu.IORQ;
@@ -208,6 +238,13 @@ namespace CPCSharp.Core
                             _crtc.Clock();
                         }
                         if (_gateArray.CpuClock) {
+                            if (_cpu.TotalTCycles > currentObservation.Count + 1000000) {
+                                previousObservation = currentObservation;
+                                currentObservation = new CycleCountObservation {
+                                    ElapsedMilliseconds = stopwatch.Elapsed.TotalMilliseconds,
+                                    Count = _cpu.TotalTCycles
+                                };
+                            }
                             _cpu.Clock();
                             if (_cpu.IORQ) {
                                 var ioDevice = GetIoDeviceForAddress(_cpu.Address);
@@ -221,7 +258,7 @@ namespace CPCSharp.Core
                                         ioDevice.Data = _cpu.Data;
                                     }
                                 } else {
-                                    Console.WriteLine($"IORQ {(_cpu.RD ? "read" : "write")} for unknown IO address: {_cpu.Address:x4}");
+                                    //Console.WriteLine($"IORQ {(_cpu.RD ? "read" : "write")} for unknown IO address: {_cpu.Address:x4}");
                                 }
                             }
                             if (_cpu.MREQ && _cpu.RD) {
