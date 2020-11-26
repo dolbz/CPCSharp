@@ -5,41 +5,72 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="CPCSharp.App.Views.DebugWindow"
+        xmlns:conv="clr-namespace:CPCSharp.App.ValueConverters"
         Title="AvaloniaAppTemplate">
   <Design.DataContext>
     <vm:DebugWindowViewModel/>
   </Design.DataContext>
   <Window.Resources>
-    <DataTemplate x:Key="ProgramListingTemplate">
-      <TextBlock Text="{Binding Path=AsmDescription}" Height="30" />
-    </DataTemplate>
+    <conv:ByteHexValueConverter x:Key="ByteHexValueConverter" />
+    <conv:ShortHexValueConverter x:Key="ShortHexValueConverter" />
   </Window.Resources>
-  <StackPanel Orientation="Horizontal">
-    <ItemsControl Items="{Binding ProgramListing}">
-        <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-                <StackPanel Orientation="Vertical"/>
-            </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
-            <DataTemplate >
-                <TextBlock Text="{Binding AsmDescription}" />
+  <StackPanel Orientation="Vertical">
+    <StackPanel Orientation="Horizontal">
+      <Button Command="{Binding Step}" Width="50" Height="50" Content="Step"/>
+      <Button Command="{Binding Reset}" Width="50" Height="50" Content="Reset"/>
+    </StackPanel>
+    <StackPanel Orientation="Horizontal">
+      <!--<ItemsControl Items="{Binding ProgramListing}">
+          <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                  <StackPanel Orientation="Vertical"/>
+              </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+              <DataTemplate >
+                  <TextBlock Text="{Binding AsmDescription}" />
+              </DataTemplate>
+          </ItemsControl.ItemTemplate>
+      </ItemsControl>-->
+      <ListBox Items="{Binding ProgramListing}" Width="300" SelectedIndex="{Binding SelectedRamIndex}" AutoScrollToSelectedItem="True">
+        <ListBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding AsmDescription}" />
             </DataTemplate>
-        </ItemsControl.ItemTemplate>
-    </ItemsControl>
-    <ListBox Items="{Binding LowerRomListing}" Width="300">
-      <ListBox.ItemTemplate>
-          <DataTemplate>
-            <TextBlock Text="{Binding AsmDescription}" />
-          </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
-    <ListBox Items="{Binding UpperRomListing}" Width="300">
-      <ListBox.ItemTemplate>
-          <DataTemplate>
-            <TextBlock Text="{Binding AsmDescription}" />
-          </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <ListBox Items="{Binding LowerRomListing}" Width="300" SelectedIndex="{Binding SelectedLowerRomIndex}" AutoScrollToSelectedItem="True">
+        <ListBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding AsmDescription}" />
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <ListBox Items="{Binding UpperRomListing}" Width="300" SelectedIndex="{Binding SelectedUpperRomIndex}" AutoScrollToSelectedItem="True">
+        <ListBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding AsmDescription}" />
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="PC: " /><TextBlock Text="{Binding Snapshot.Cpu.PC, Converter={StaticResource ShortHexValueConverter}}" />
+        </StackPanel>
+        <TextBlock Text="Stack: " />
+        <ItemsControl Items="{Binding Snapshot.Stack}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding, Converter={StaticResource ByteHexValueConverter}}" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </StackPanel>
   </StackPanel>
 </Window>

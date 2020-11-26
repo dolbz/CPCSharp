@@ -4,16 +4,35 @@ using Z80;
 namespace CPCSharp.Core {
     public class MachineStateSnapshot {
 
-        public MachineStateSnapshot(Z80CpuSnapshot cpuSnapshot, List<string> ramProgramListing, List<string> lowerRomProgramListing, List<string> upperRomProgramListing) {
-            this.CpuSnapshot = cpuSnapshot;
+        public MachineStateSnapshot(
+            bool waitingOnBreakpoint,
+            Z80CpuSnapshot cpuSnapshot, 
+            List<string> ramProgramListing,
+            List<string> lowerRomProgramListing,
+            List<string> upperRomProgramListing,
+            MemoryReadLocation currentMemoryReadLocation,
+            List<byte> stackContents
+            ) 
+        {
+            this.WaitingOnBreakpoint = waitingOnBreakpoint;
+            this.Cpu = cpuSnapshot;
             this.RamProgramListing = ramProgramListing;
             this.LowerRomProgramListing = lowerRomProgramListing;
             this.UpperRomProgramListing = upperRomProgramListing;
+            this.MemoryReadLocation = currentMemoryReadLocation;
+            this.Stack = stackContents;
         }
+
+        public bool WaitingOnBreakpoint { get; }
+
         public List<string> RamProgramListing { get; }
         public List<string> LowerRomProgramListing { get; }
         public List<string> UpperRomProgramListing { get; }
 
-        public Z80CpuSnapshot CpuSnapshot { get; }
+        public MemoryReadLocation MemoryReadLocation { get; }
+
+        public List<byte> Stack { get; }
+
+        public Z80CpuSnapshot Cpu { get; }
     }
 }

@@ -27,6 +27,7 @@ namespace CPCSharp.Core {
         private const int PortCAddressMask = 0xf600;
         private const int ControlAddressMask = 0xf700;
 
+        private readonly CRTC _crtc;
         private byte _ioControlData = 0;
         private byte _portCLatchedOutput;
 
@@ -41,7 +42,10 @@ namespace CPCSharp.Core {
                     return _psg.Data;
                 }
                 else if (maskedAddress == PortBAddressMask) {
-                    return 0b00001110; // TODO this currently harcodes manufacturer to Amstrad only. Other bits are 0
+                    byte manufacturer = 0b00001110;
+                    byte vsync = (byte)(_crtc.VSYNC ? 0x1 : 0x0);
+
+                    return (byte)(manufacturer | vsync);
                 }
                 return 0; // Shouldn't technically hit this...
             } 
@@ -86,7 +90,8 @@ namespace CPCSharp.Core {
             }
         }
 
-        public PPI() {
+        public PPI(CRTC crtc) {
+            _crtc = crtc;
             _psg = new PSG();
         }
 

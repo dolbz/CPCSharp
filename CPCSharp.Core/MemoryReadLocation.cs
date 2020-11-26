@@ -1,10 +1,10 @@
 namespace CPCSharp.Core {
-    internal enum PhysicalMemoryComponent {
+    public enum PhysicalMemoryComponent {
         RAM,
         LowerROM,
         UpperROM
     }
-    internal struct MemoryReadLocation {
+    public struct MemoryReadLocation {
         public PhysicalMemoryComponent Component { get; }
 
         public ushort ComponentLocalAddress { get; }

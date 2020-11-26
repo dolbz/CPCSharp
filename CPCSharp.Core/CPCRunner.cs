@@ -22,7 +22,15 @@ namespace CPCSharp.Core
 
         private GateArray _gateArray = new GateArray();
 
+        private CRTC _crtc = new CRTC();
+
         private List<IODevice> _ioDevices = new List<IODevice>();
+
+        private AutoResetEvent _cpuBreakingSignal = new AutoResetEvent(false);
+        private AutoResetEvent _uiCompleteSignal = new AutoResetEvent(false);
+
+        private bool _nextInstructionBreakpoint = false;
+        private bool _breakpointHit;
         
         public void AccessCpuState(Action<Z80Cpu, byte[]> cpuAction) {
             lock(_cpu.CpuStateLock) {
@@ -38,6 +46,23 @@ namespace CPCSharp.Core
             ThreadStart work = RunCpu;
             Thread thread = new Thread(work);
             thread.Start();
+        }
+
+        public void Step() {
+            lock(_cpu.CpuStateLock) {
+                _breakpointHit = false;
+                _nextInstructionBreakpoint = true;
+            }
+            _uiCompleteSignal.Set();
+        }
+
+        public void Reset() {
+            lock(_cpu.CpuStateLock) {
+                _breakpointHit = false;
+                _cpu.Reset();
+                _ram = new byte[64*1024];
+            }
+            _uiCompleteSignal.Set();
         }
 
         private void LoadROMs() {
@@ -89,7 +114,7 @@ namespace CPCSharp.Core
 
         private void SetupIODevices() {
             _ioDevices.Add(_gateArray);
-            _ioDevices.Add(new PPI());
+            _ioDevices.Add(new PPI(_crtc));
         }
 
         private IODevice GetIoDeviceForAddress(ushort address) {
@@ -105,7 +130,7 @@ namespace CPCSharp.Core
             lock(_cpu.CpuStateLock) {
                 var cpuSnapshot = _cpu.GetStateSnapshot();
 
-                var pc = _cpu.PC;
+                var pc = cpuSnapshot.PC;
                 var startPc = (ushort)(pc-20);
 
                 var listingBytes = new byte[50];
@@ -116,7 +141,26 @@ namespace CPCSharp.Core
                 }
                 var listing = Disassemble(startPc, listingBytes);
 
-                return new MachineStateSnapshot(cpuSnapshot, listing, _lowerRomDisassembly, _upperRomDisassembly);
+                var sp = cpuSnapshot.SP;
+
+                var stackContents = new List<byte>();
+                for (int i = 0; i < 30; i++) {
+                    var currentSp = (ushort)(sp+i);
+
+                    if (sp >= 0xc000) { // CPC normal base of stack
+                        break;
+                    }
+                    stackContents.Add(_ram[currentSp]);
+                }
+
+                return new MachineStateSnapshot(
+                    _breakpointHit,
+                    cpuSnapshot, 
+                    listing, 
+                    _lowerRomDisassembly, 
+                    _upperRomDisassembly, 
+                    GetCurrentReadLocationForAddress(cpuSnapshot.PC),
+                    stackContents);
             }
         }
 
@@ -135,8 +179,10 @@ namespace CPCSharp.Core
             var byteCount = 1;
             if (opcode == 0xcb || opcode == 0xdd || opcode == 0xed || opcode == 0xfd) {
                 // Pickup next byte as this is a prefixed instruction
-                opcode = opcode << 8 | source[addr + 1];
-                byteCount = 2;
+                if (addr+1 < source.Length) {
+                    opcode = opcode << 8 | source[addr + 1];
+                    byteCount = 2;
+                }
             }
 
             return (_cpu.instructions[opcode], byteCount);
@@ -145,47 +191,64 @@ namespace CPCSharp.Core
         public void RunCpu() {
             _cpuRunning = true;
             while (_cpuRunning) {
-                // if (manuallyStepped) {
-                //     instructionSignal.Set();
-                //     uiSignal.WaitOne(); // Wait until the UI has signalled CPU execution can continue
-                // }
+                if (_breakpointHit) {
+                    //_cpuBreakingSignal.Set();
+                    _uiCompleteSignal.WaitOne(); // Wait until the UI has signalled CPU execution can continue
+                }
                 lock(_cpu.CpuStateLock) {
                     do {
-                        _cpu.Clock();
-                        if (_cpu.IORQ) {
-                            var ioDevice = GetIoDeviceForAddress(_cpu.Address);
-                            if (ioDevice != null) {
-                                ioDevice.Address = _cpu.Address;
-                                if (_cpu.RD) {
-                                    _cpu.Data = ioDevice.Data;
+                        _gateArray.HSYNC = _crtc.HSYNC;
+                        _gateArray.VSYNC = _crtc.VSYNC;
+                        _gateArray.M1 = _cpu.M1;
+                        _gateArray.IORQ = _cpu.IORQ;
+                        _gateArray.Clock();
+                        _cpu.INT = _gateArray.INTERRUPT;
+
+                        if (_gateArray.CCLK) {
+                            _crtc.Clock();
+                        }
+                        if (_gateArray.CpuClock) {
+                            _cpu.Clock();
+                            if (_cpu.IORQ) {
+                                var ioDevice = GetIoDeviceForAddress(_cpu.Address);
+                                if (ioDevice != null) {
+                                    ioDevice.Address = _cpu.Address;
+                                    if (_cpu.RD) {
+                                        _cpu.Data = ioDevice.Data;
+                                    }
+                                    else if (_cpu.WR) {
+                                        // write to an IO device
+                                        ioDevice.Data = _cpu.Data;
+                                    }
+                                } else {
+                                    Console.WriteLine($"IORQ {(_cpu.RD ? "read" : "write")} for unknown IO address: {_cpu.Address:x4}");
                                 }
-                                else if (_cpu.WR) {
-                                    // write to an IO device
-                                    ioDevice.Data = _cpu.Data;
+                            }
+                            if (_cpu.MREQ && _cpu.RD) {
+                                var readLocation = GetCurrentReadLocationForAddress(_cpu.Address);
+                                switch (readLocation.Component)
+                                {
+                                    case PhysicalMemoryComponent.LowerROM:
+                                        _cpu.Data = _lowerRom[readLocation.ComponentLocalAddress];
+                                        break;
+                                    case PhysicalMemoryComponent.UpperROM:
+                                        _cpu.Data = _upperRom[readLocation.ComponentLocalAddress];
+                                        break;
+                                    case PhysicalMemoryComponent.RAM:
+                                        _cpu.Data = _ram[readLocation.ComponentLocalAddress];
+                                        break;
                                 }
-                            } else {
-                                Console.WriteLine($"IORQ {(_cpu.RD ? "read" : "write")} for unknown IO address: {_cpu.Address:x4}");
+                            }
+                            if (_cpu.MREQ && _cpu.WR) {
+                                _ram[_cpu.Address] = _cpu.Data;
                             }
                         }
-                        if (_cpu.MREQ && _cpu.RD) {
-                            var readLocation = GetCurrentReadLocationForAddress(_cpu.Address);
-                            switch (readLocation.Component)
-                            {
-                                case PhysicalMemoryComponent.LowerROM:
-                                    _cpu.Data = _lowerRom[readLocation.ComponentLocalAddress];
-                                    break;
-                                case PhysicalMemoryComponent.UpperROM:
-                                    _cpu.Data = _upperRom[readLocation.ComponentLocalAddress];
-                                    break;
-                                case PhysicalMemoryComponent.RAM:
-                                    _cpu.Data = _ram[readLocation.ComponentLocalAddress];
-                                    break;
-                            }
-                        }
-                        if (_cpu.MREQ && _cpu.WR) {
-                            _ram[_cpu.Address] = _cpu.Data;
-                        }
-                    } while(!_cpu.NewInstruction);
+                    } while(!_cpu.NewInstruction && !_breakpointHit);
+                    
+                    if (_cpu.NewInstruction && _gateArray.CpuClock && _nextInstructionBreakpoint) {
+                        _breakpointHit = true;
+                        _nextInstructionBreakpoint = false;
+                    }
                 }
             }
             //instructionSignal.Set();
