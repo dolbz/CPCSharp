@@ -58,7 +58,7 @@ namespace CPCSharp.ViewModels
         public DebugWindowViewModel(CPCRunner runner) {
             _runner =  runner;
             
-            var timer = new Timer(75);
+            var timer = new Timer(125);
             timer.Elapsed += OnUpdate;
             timer.Start();
         }

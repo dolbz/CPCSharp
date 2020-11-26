@@ -1,11 +1,12 @@
 using System;
 
-namespace CPCSharp.Core {
-
-    public interface IODevice {
-        ushort Address { set; }
-        byte Data { get; set; }
-        bool ActiveAtAddress(ushort address);
+namespace CPCSharp.Core
+{
+    public enum ScreenMode {
+        Mode0 = 0,
+        Mode1 = 1,
+        Mode2 = 2,
+        Mode3 = 3 // Unofficial and not supported here
     }
 
     /// <summary>
@@ -17,7 +18,12 @@ namespace CPCSharp.Core {
         public bool LowerROMEnabled { get; set;} = true;
         public bool UpperROMEnabled { get; set;} = true;
 
-        private int interruptsThisFrame;
+        private ScreenMode _screenMode;
+
+        private int[] _penColours = new int[16];
+        private int _borderColour = 0;
+        private int _selectedPenIndex = 0;
+
         private int _hsyncsSinceVsyncStarted;
         private bool _vsync;
         public bool VSYNC { 
@@ -114,10 +120,10 @@ namespace CPCSharp.Core {
 
             switch (functionSelectionBits) {
                 case 0:
-                    // select pen
+                    SelectPen();
                     break;
                 case 1:
-                    // select colour for pen
+                    SelectPenColour();
                     break;
                 case 2:
                     // select screen mode, ROM configuration and interrupt control
@@ -129,18 +135,46 @@ namespace CPCSharp.Core {
             }
         }
 
+        private void SelectPenColour() 
+        {
+            _penColours[_selectedPenIndex] = Data & 0x1f;
+        }
+
+        private void SelectPen() {
+            // Bit	Value	Function
+            // 7	0	    Gate Array function "Pen Selection"
+            // 6	0
+            // 5	-	    not used
+            // 4	1	    Select border
+            // 3	x	    bits 0-3 = pen number if select border is false
+            // 2	x
+            // 1	x
+            // 0	x
+
+            if ((Data & 0x16) == 0x16) {
+                _selectedPenIndex = -1; // -1 is a magic value indicating border colour pen is selected
+            } else {
+                var penNumber = Data & 0x0f;
+                _selectedPenIndex = penNumber;
+            }
+        }
+
         private void ScreenModeROMConfig() {
             // 4	x	Interrupt generation control
             // 3	x	1=Upper ROM area disable, 0=Upper ROM area enable
             // 2	x	1=Lower ROM area disable, 0=Lower ROM area enable
-            // 1	x	Screen Mode slection
-            // 0   x
+            // 1	x	Screen Mode selection
+            // 0    x
 
             var lowerROMConfigMask = 0x4;
             var upperROMConfigMask = 0x8;
 
             LowerROMEnabled = (_data & lowerROMConfigMask) == 0;
             UpperROMEnabled = (_data & upperROMConfigMask) == 0;
+
+            var screenModeBits = Data & 0x3;
+            _screenMode = (ScreenMode)screenModeBits;
+
             //Console.WriteLine($"Screen Mode and ROM config Lower ROM En: {LowerROMEnabled}, Upper ROM EN: {UpperROMEnabled}");
         }
     }
