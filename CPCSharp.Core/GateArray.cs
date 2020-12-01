@@ -1,3 +1,5 @@
+using System.Drawing;
+using System.Collections.Generic;
 using System;
 
 namespace CPCSharp.Core
@@ -14,6 +16,41 @@ namespace CPCSharp.Core
     /// </summary>
     public class GateArray : IODevice
     {
+        private Dictionary<int, Color> ColourMap = new Dictionary<int, Color> {
+            { 0x40, Color.FromArgb(255/2,   255/2,  255/2) },
+            { 0x41, Color.FromArgb(255/2,   255/2,  255/2) },
+            { 0x42, Color.FromArgb(0,       255,    255/2) },
+            { 0x43, Color.FromArgb(255,     255,    255/2) },
+            { 0x44, Color.FromArgb(0,       0,      255/2) },
+            { 0x45, Color.FromArgb(255,     0,      255/2) },
+            { 0x46, Color.FromArgb(0,       255/2,  255/2) },
+            { 0x47, Color.FromArgb(255,     255/2,  255/2) },
+            { 0x48, Color.FromArgb(255,     0,      255/2) },
+            { 0x49, Color.FromArgb(255,     255,    255/2) },
+            { 0x4a, Color.FromArgb(255,     255,    0    ) },
+            { 0x4b, Color.FromArgb(255,     255,    255  ) },
+            { 0x4c, Color.FromArgb(255,     0,      0    ) },
+            { 0x4d, Color.FromArgb(255,     0,      255  ) },
+            { 0x4e, Color.FromArgb(255,     255/2,  0    ) },
+            { 0x4f, Color.FromArgb(255,     255/2,  255  ) },
+            { 0x50, Color.FromArgb(0,       0,      255/2) },
+            { 0x51, Color.FromArgb(0,       255,    255/2) },
+            { 0x52, Color.FromArgb(0,       255,    0    ) },
+            { 0x53, Color.FromArgb(0,       255,    255  ) },
+            { 0x54, Color.FromArgb(0,       0,      0    ) },
+            { 0x55, Color.FromArgb(0,       0,      255  ) },
+            { 0x56, Color.FromArgb(0,       255/2,  0    ) },
+            { 0x57, Color.FromArgb(0,       255/2,  255  ) },
+            { 0x58, Color.FromArgb(255/2,   0,      255/2) },
+            { 0x59, Color.FromArgb(255/2,   255,    255/2) },
+            { 0x5a, Color.FromArgb(255/2,   255,    0    ) },
+            { 0x5b, Color.FromArgb(255/2,   255,    255  ) },
+            { 0x5c, Color.FromArgb(255/2,   0,      0    ) },
+            { 0x5d, Color.FromArgb(255/2,   0,      255  ) },
+            { 0x5e, Color.FromArgb(255/2,   255/2,  0    ) },
+            { 0x5f, Color.FromArgb(255/2,   255/2,  255  ) }
+        };
+
         private int _clockTicks = 0;
         public bool LowerROMEnabled { get; set;} = true;
         public bool UpperROMEnabled { get; set;} = true;
@@ -56,7 +93,9 @@ namespace CPCSharp.Core
 
         public bool CpuClock { get; private set; }
 
-        public bool CCLK{ get; private set; }
+        public bool CCLK { get; private set; }
+        
+        public bool CCLK_Off { get; private set; }
 
         public bool M1 { get; set; }
         public bool IORQ { get; set; }
@@ -65,8 +104,8 @@ namespace CPCSharp.Core
         public byte Data { 
             get { 
                 Console.WriteLine("Data read from gate array which isn't possible");
-                return 0;}
-        
+                return 0;
+            }
             set {
                 _data = value;
                 ProcessInputData();
@@ -82,6 +121,7 @@ namespace CPCSharp.Core
             _clockTicks++;
             CpuClock = _clockTicks % 4 == 0;
             CCLK = _clockTicks % 16 == 0;
+            CCLK_Off = (_clockTicks + 8) % 16 == 0;
 
             CheckHsyncStatus();
             CheckVsyncStatus();
@@ -137,7 +177,7 @@ namespace CPCSharp.Core
 
         private void SelectPenColour() 
         {
-            _penColours[_selectedPenIndex] = Data & 0x1f;
+            _penColours[_selectedPenIndex] = _data & 0x1f;
         }
 
         private void SelectPen() {
@@ -151,10 +191,10 @@ namespace CPCSharp.Core
             // 1	x
             // 0	x
 
-            if ((Data & 0x16) == 0x16) {
+            if ((_data & 0x16) == 0x16) {
                 _selectedPenIndex = -1; // -1 is a magic value indicating border colour pen is selected
             } else {
-                var penNumber = Data & 0x0f;
+                var penNumber = _data & 0x0f;
                 _selectedPenIndex = penNumber;
             }
         }
@@ -172,7 +212,7 @@ namespace CPCSharp.Core
             LowerROMEnabled = (_data & lowerROMConfigMask) == 0;
             UpperROMEnabled = (_data & upperROMConfigMask) == 0;
 
-            var screenModeBits = Data & 0x3;
+            var screenModeBits = _data & 0x3;
             _screenMode = (ScreenMode)screenModeBits;
 
             //Console.WriteLine($"Screen Mode and ROM config Lower ROM En: {LowerROMEnabled}, Upper ROM EN: {UpperROMEnabled}");

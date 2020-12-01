@@ -235,8 +235,19 @@ namespace CPCSharp.Core
                         _cpu.INT = _gateArray.INTERRUPT;
 
                         if (_gateArray.CCLK) {
+                            var ra0to2 = (_crtc.RowAddress & 0x7) << 11;
+                            var ma12to13 = (_crtc.MemoryAddress & 0x3000) << 2;
+                            var ma0to9 = (_crtc.MemoryAddress & 0x3ff) << 1;
+                            _gateArray.Address = (ushort)(ma0to9 | ma12to13 | ra0to2 | 0x1);
                             _crtc.Clock();
+                        } 
+                        if (_gateArray.CCLK_Off) {
+                            var ra0to2 = (_crtc.RowAddress & 0x7) << 11;
+                            var ma12to13 = (_crtc.MemoryAddress & 0x3000) << 2;
+                            var ma0to9 = (_crtc.MemoryAddress & 0x3ff) << 1;
+                            _gateArray.Address = (ushort)(ma0to9 | ma12to13 | ra0to2);
                         }
+                        
                         if (_gateArray.CpuClock) {
                             if (_cpu.TotalTCycles > currentObservation.Count + 1000000) {
                                 previousObservation = currentObservation;
@@ -244,6 +255,13 @@ namespace CPCSharp.Core
                                     ElapsedMilliseconds = stopwatch.Elapsed.TotalMilliseconds,
                                     Count = _cpu.TotalTCycles
                                 };
+
+                                var timeDelta = currentObservation.ElapsedMilliseconds-previousObservation.ElapsedMilliseconds;
+                                var cycleCountDelta = currentObservation.Count - previousObservation.Count;
+
+                                var calculatedMhzFrequency = (cycleCountDelta/timeDelta)/1_000;
+
+                                Console.WriteLine($"Frequency: {calculatedMhzFrequency}MHz");
                             }
                             _cpu.Clock();
                             if (_cpu.IORQ) {
