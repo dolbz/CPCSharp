@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.Collections.Generic;
 using System;
+using CPCSharp.Core.Interfaces;
 
 namespace CPCSharp.Core
 {
@@ -17,40 +18,41 @@ namespace CPCSharp.Core
     public class GateArray : IODevice
     {
         private Dictionary<int, Color> ColourMap = new Dictionary<int, Color> {
-            { 0x40, Color.FromArgb(255/2,   255/2,  255/2) },
-            { 0x41, Color.FromArgb(255/2,   255/2,  255/2) },
-            { 0x42, Color.FromArgb(0,       255,    255/2) },
-            { 0x43, Color.FromArgb(255,     255,    255/2) },
-            { 0x44, Color.FromArgb(0,       0,      255/2) },
-            { 0x45, Color.FromArgb(255,     0,      255/2) },
-            { 0x46, Color.FromArgb(0,       255/2,  255/2) },
-            { 0x47, Color.FromArgb(255,     255/2,  255/2) },
-            { 0x48, Color.FromArgb(255,     0,      255/2) },
-            { 0x49, Color.FromArgb(255,     255,    255/2) },
-            { 0x4a, Color.FromArgb(255,     255,    0    ) },
-            { 0x4b, Color.FromArgb(255,     255,    255  ) },
-            { 0x4c, Color.FromArgb(255,     0,      0    ) },
-            { 0x4d, Color.FromArgb(255,     0,      255  ) },
-            { 0x4e, Color.FromArgb(255,     255/2,  0    ) },
-            { 0x4f, Color.FromArgb(255,     255/2,  255  ) },
-            { 0x50, Color.FromArgb(0,       0,      255/2) },
-            { 0x51, Color.FromArgb(0,       255,    255/2) },
-            { 0x52, Color.FromArgb(0,       255,    0    ) },
-            { 0x53, Color.FromArgb(0,       255,    255  ) },
-            { 0x54, Color.FromArgb(0,       0,      0    ) },
-            { 0x55, Color.FromArgb(0,       0,      255  ) },
-            { 0x56, Color.FromArgb(0,       255/2,  0    ) },
-            { 0x57, Color.FromArgb(0,       255/2,  255  ) },
-            { 0x58, Color.FromArgb(255/2,   0,      255/2) },
-            { 0x59, Color.FromArgb(255/2,   255,    255/2) },
-            { 0x5a, Color.FromArgb(255/2,   255,    0    ) },
-            { 0x5b, Color.FromArgb(255/2,   255,    255  ) },
-            { 0x5c, Color.FromArgb(255/2,   0,      0    ) },
-            { 0x5d, Color.FromArgb(255/2,   0,      255  ) },
-            { 0x5e, Color.FromArgb(255/2,   255/2,  0    ) },
-            { 0x5f, Color.FromArgb(255/2,   255/2,  255  ) }
+            { 0, Color.FromArgb(255/2,   255/2,  255/2) },
+            { 1, Color.FromArgb(255/2,   255/2,  255/2) },
+            { 2, Color.FromArgb(0,       255,    255/2) },
+            { 3, Color.FromArgb(255,     255,    255/2) },
+            { 4, Color.FromArgb(0,       0,      255/2) },
+            { 5, Color.FromArgb(255,     0,      255/2) },
+            { 6, Color.FromArgb(0,       255/2,  255/2) },
+            { 7, Color.FromArgb(255,     255/2,  255/2) },
+            { 8, Color.FromArgb(255,     0,      255/2) },
+            { 9, Color.FromArgb(255,     255,    255/2) },
+            { 10, Color.FromArgb(255,     255,    0    ) },
+            { 11, Color.FromArgb(255,     255,    255  ) },
+            { 12, Color.FromArgb(255,     0,      0    ) },
+            { 13, Color.FromArgb(255,     0,      255  ) },
+            { 14, Color.FromArgb(255,     255/2,  0    ) },
+            { 15, Color.FromArgb(255,     255/2,  255  ) },
+            { 16, Color.FromArgb(0,       0,      255/2) },
+            { 17, Color.FromArgb(0,       255,    255/2) },
+            { 18, Color.FromArgb(0,       255,    0    ) },
+            { 19, Color.FromArgb(0,       255,    255  ) },
+            { 20, Color.FromArgb(0,       0,      0    ) },
+            { 21, Color.FromArgb(0,       0,      255  ) },
+            { 22, Color.FromArgb(0,       255/2,  0    ) },
+            { 23, Color.FromArgb(0,       255/2,  255  ) },
+            { 24, Color.FromArgb(255/2,   0,      255/2) },
+            { 25, Color.FromArgb(255/2,   255,    255/2) },
+            { 26, Color.FromArgb(255/2,   255,    0    ) },
+            { 27, Color.FromArgb(255/2,   255,    255  ) },
+            { 28, Color.FromArgb(255/2,   0,      0    ) },
+            { 29, Color.FromArgb(255/2,   0,      255  ) },
+            { 30, Color.FromArgb(255/2,   255/2,  0    ) },
+            { 31, Color.FromArgb(255/2,   255/2,  255  ) }
         };
 
+        private readonly IScreenRenderer _renderer;
         private int _clockTicks = 0;
         public bool LowerROMEnabled { get; set;} = true;
         public bool UpperROMEnabled { get; set;} = true;
@@ -71,6 +73,9 @@ namespace CPCSharp.Core
                 if (!currentValue && _vsync) {
                     _hsyncsSinceVsyncStarted = 0;
                 }
+                if (currentValue && !_vsync) {
+                    _renderer.SendVsyncEnd(); // TODO this should be clocked and not done on set right?
+                }
             }
         }
 
@@ -89,6 +94,8 @@ namespace CPCSharp.Core
             }
         }
 
+        public bool DISPEN { get; set; }
+
         public bool INTERRUPT { get; set; }
 
         public bool CpuClock { get; private set; }
@@ -96,6 +103,9 @@ namespace CPCSharp.Core
         public bool CCLK { get; private set; }
         
         public bool CCLK_Off { get; private set; }
+
+        public bool READY { get; private set; }
+        public bool CPUADDR { get; private set; }
 
         public bool M1 { get; set; }
         public bool IORQ { get; set; }
@@ -108,7 +118,9 @@ namespace CPCSharp.Core
             }
             set {
                 _data = value;
-                ProcessInputData();
+                if (CPUADDR) {
+                    ProcessInputData(); // Only if there's input data on the line
+                }
             } 
         }
 
@@ -117,11 +129,23 @@ namespace CPCSharp.Core
             set;
         }
 
+        public GateArray(IScreenRenderer renderer) {
+            _renderer = renderer;
+        }
+
         public void Clock() {
+            if (CCLK || CCLK_Off) 
+            {
+                SendPixels();
+            }
+
+            var sixteenths = _clockTicks % 16;
             _clockTicks++;
             CpuClock = _clockTicks % 4 == 0;
-            CCLK = _clockTicks % 16 == 0;
-            CCLK_Off = (_clockTicks + 8) % 16 == 0;
+            CCLK = sixteenths == 11;
+            CCLK_Off = sixteenths == 3;
+            READY = sixteenths >= 0 && sixteenths < 4;
+            CPUADDR = sixteenths >=0 && sixteenths < 8;
 
             CheckHsyncStatus();
             CheckVsyncStatus();
@@ -130,6 +154,89 @@ namespace CPCSharp.Core
                 _hsyncCompletedCount &= 0b00011111;
                 INTERRUPT = false;
             }
+        }
+
+        private void SendPixels() {
+            // Sends a batch of pixels to a renderer. Amount varies by screen mode
+            // This is unlike the real hardware where the video output will change on each clock tick
+            // but it's likely quicker to send batches and there's no real downside for non-analogue renderers.
+            // The memory data is read in full bytes so it's not like the batching causes any timing mismatch with
+            // pixels changing after they've been sent in a batch
+            if (!DISPEN) {
+                var pixels = GeneratePixelsForScreenMode();
+                _renderer.SendPixels(pixels);
+            }
+        }
+
+        private Color[] GeneratePixelsForScreenMode() {
+            switch (_screenMode) {
+                case ScreenMode.Mode0:
+                    return ExtractMode0PixelsFromData();
+                case ScreenMode.Mode1:
+                    return ExtractMode1PixelsFromData();
+                case ScreenMode.Mode2:
+                    return ExtractMode2PixelsFromData();
+                default:
+                    throw new NotImplementedException("This screen mode is not supported");
+            }
+        }
+
+        private Color[] ExtractMode0PixelsFromData() {
+            var pixel0Bit0 = (_data & 0x80) >> 7;
+            var pixel0Bit1 = (_data & 0x8) >> 2;
+            var pixel0Bit2 = (_data & 0x20) >> 3;
+            var pixel0Bit3 = (_data & 0x2) << 2;
+            var pixel0Value = _penColours[pixel0Bit3 | pixel0Bit2 | pixel0Bit1 | pixel0Bit0];
+
+            var pixel1Bit0 = (_data & 0x40) >> 6;
+            var pixel1Bit1 = (_data & 0x4) >> 1;
+            var pixel1Bit2 = (_data & 0x10) >> 2;
+            var pixel1Bit3 = (_data & 0x1) << 3;
+            var pixel1Value = _penColours[pixel1Bit3 | pixel1Bit2 | pixel1Bit1 | pixel1Bit0];
+
+            return new Color[] { ColourMap[pixel0Value], ColourMap[pixel1Value] };
+        }
+
+        private Color[] ExtractMode1PixelsFromData() {
+            var pixel0Bit0 = (_data & 0x8) >> 3;
+            var pixel0Bit1 = (_data & 0x80) >> 6;
+            var pixel0Value = _penColours[pixel0Bit1 | pixel0Bit0];
+
+            var pixel1Bit0 = (_data & 0x4) >> 2;
+            var pixel1Bit1 = (_data & 0x40) >> 5;
+            var pixel1Value = _penColours[pixel1Bit1 | pixel1Bit0];
+
+            var pixel2Bit0 = (_data & 0x2) >> 1;
+            var pixel2Bit1 = (_data & 0x20) >> 4;
+            var pixel2Value = _penColours[pixel2Bit1 | pixel2Bit0];
+
+            var pixel3Bit0 = (_data & 0x1);
+            var pixel3Bit1 = (_data & 0x10) >> 3;
+            var pixel3Value = _penColours[pixel3Bit1 | pixel3Bit0];
+
+            return new Color[] { ColourMap[pixel0Value], ColourMap[pixel1Value], ColourMap[pixel2Value], ColourMap[pixel3Value] };
+        }
+
+        private Color[] ExtractMode2PixelsFromData() {
+            var pixel7Value = _penColours[(_data & 0x80) >> 7];
+            var pixel6Value = _penColours[(_data & 0x40) >> 6];
+            var pixel5Value = _penColours[(_data & 0x20) >> 5];
+            var pixel4Value = _penColours[(_data & 0x10) >> 4];
+            var pixel3Value = _penColours[(_data & 0x8) >> 3];
+            var pixel2Value = _penColours[(_data & 0x4) >> 2];
+            var pixel1Value = _penColours[(_data & 0x2) >> 1];
+            var pixel0Value = _penColours[_data & 0x1];
+
+            return new Color[] { 
+                ColourMap[pixel0Value], 
+                ColourMap[pixel1Value],
+                ColourMap[pixel2Value],
+                ColourMap[pixel3Value], 
+                ColourMap[pixel4Value],
+                ColourMap[pixel5Value],
+                ColourMap[pixel6Value],
+                ColourMap[pixel7Value],
+            };
         }
 
         private void CheckHsyncStatus() {

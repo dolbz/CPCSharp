@@ -26,6 +26,9 @@ namespace CPCSharp.Core {
 
         private int _linesCompleted = 0;
 
+        private int _startAddressHigh = 0x30;
+        private int _startAddressLow = 0;
+
         private int _maxRasterAddress = 7;
 
         public int RowAddress { get; set; }
@@ -33,9 +36,6 @@ namespace CPCSharp.Core {
 
         public void Clock() 
         {
-            MemoryAddress++;
-            _clockCyclesThisLine++;
-
             if (_clockCyclesThisLine >= _horinzontalSyncPosition && _clockCyclesThisLine < _horinzontalSyncPosition + _hsyncWidth) {
                 HSYNC = true;
             } else {
@@ -43,13 +43,14 @@ namespace CPCSharp.Core {
             }
 
             if (_clockCyclesThisLine == _horizontalTotal) {
+                if (RowAddress == _maxRasterAddress) {
+                    RowAddress = 0;
+                } else {
+                    RowAddress++;
+                    MemoryAddress -= _horizontalDisplayed;
+                }
                 _clockCyclesThisLine = 0;
-                RowAddress++;
                 _linesCompleted++;
-            }
-
-            if (_linesCompleted > _verticalDisplayed* _maxRasterAddress) {
-                DISP = true;
             }
 
             if (_linesCompleted >= (_verticalSyncPosition * _maxRasterAddress) && _linesCompleted < (_verticalSyncPosition * _maxRasterAddress) + _vsyncWidth) {
@@ -59,6 +60,7 @@ namespace CPCSharp.Core {
             }
 
             if (_linesCompleted >= _verticalTotal*_maxRasterAddress) {
+                MemoryAddress = (_startAddressHigh << 8) | _startAddressLow;
                 _linesCompleted = 0;
             }
 
@@ -67,6 +69,11 @@ namespace CPCSharp.Core {
             } else {
                 DISP = false;
             }
+
+            if (!DISP) {
+                MemoryAddress++;
+            }
+            _clockCyclesThisLine++;
         }
     }
 }

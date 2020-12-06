@@ -6,6 +6,7 @@ using Z80.Instructions;
 using System.Threading;
 using System.Reflection;
 using System.Collections.Generic;
+using CPCSharp.Core.Interfaces;
 
 namespace CPCSharp.Core
 {
@@ -25,7 +26,7 @@ namespace CPCSharp.Core
         private byte[] _lowerRom = new byte[16*1024];
         private byte[] _upperRom = new byte[16*1024];
 
-        private GateArray _gateArray = new GateArray();
+        private readonly GateArray _gateArray;
 
         private CRTC _crtc = new CRTC();
 
@@ -42,6 +43,10 @@ namespace CPCSharp.Core
         private CycleCountObservation previousObservation = new CycleCountObservation();
         private CycleCountObservation currentObservation = new CycleCountObservation();
         
+        public CPCRunner(IScreenRenderer renderer) {
+            _gateArray = new GateArray(renderer);
+        }
+
         public void AccessCpuState(Action<Z80Cpu, byte[]> cpuAction) {
             lock(_cpu.CpuStateLock) {
                 cpuAction(_cpu, _ram);
@@ -204,16 +209,6 @@ namespace CPCSharp.Core
             return (_cpu.instructions[opcode], byteCount);
         }
 
-        public void SetRendererListener(Action renderListener) {
-            _renderListener = renderListener;
-        }
-
-        private void NotifyRendererOfCompleteScreen() {
-            if (_renderListener != null) {
-                _renderListener(); // TODO change this to pass in a screen buffer once we've got buffering happening
-            }
-        }
-
         public void RunCpu() {
             _cpuRunning = true;
             while (_cpuRunning) {
@@ -224,28 +219,31 @@ namespace CPCSharp.Core
                 lock(_cpu.CpuStateLock) {
                     do {
                         _gateArray.HSYNC = _crtc.HSYNC;
-                        if (_gateArray.VSYNC && !_crtc.VSYNC) { // TODO is this the right time to do this?
-                            // Notify screen renderers that they can draw now
-                            NotifyRendererOfCompleteScreen();
-                        }
                         _gateArray.VSYNC = _crtc.VSYNC;
+                        _gateArray.DISPEN = _crtc.DISP;
                         _gateArray.M1 = _cpu.M1;
                         _gateArray.IORQ = _cpu.IORQ;
-                        _gateArray.Clock();
-                        _cpu.INT = _gateArray.INTERRUPT;
 
-                        if (_gateArray.CCLK) {
-                            var ra0to2 = (_crtc.RowAddress & 0x7) << 11;
-                            var ma12to13 = (_crtc.MemoryAddress & 0x3000) << 2;
-                            var ma0to9 = (_crtc.MemoryAddress & 0x3ff) << 1;
-                            _gateArray.Address = (ushort)(ma0to9 | ma12to13 | ra0to2 | 0x1);
-                            _crtc.Clock();
-                        } 
-                        if (_gateArray.CCLK_Off) {
-                            var ra0to2 = (_crtc.RowAddress & 0x7) << 11;
-                            var ma12to13 = (_crtc.MemoryAddress & 0x3000) << 2;
-                            var ma0to9 = (_crtc.MemoryAddress & 0x3ff) << 1;
-                            _gateArray.Address = (ushort)(ma0to9 | ma12to13 | ra0to2);
+                        _gateArray.Clock();
+
+                        _cpu.INT = _gateArray.INTERRUPT;
+                        _cpu.WAIT = !_gateArray.READY;
+
+                        if (!_gateArray.CPUADDR) {
+                            if (_gateArray.CCLK) {
+                                var ra0to2 = (_crtc.RowAddress & 0x7) << 11;
+                                var ma12to13 = (_crtc.MemoryAddress & 0x3000) << 2;
+                                var ma0to9 = (_crtc.MemoryAddress & 0x3ff) << 1;
+                                _gateArray.Address = (ushort)(ma0to9 | ma12to13 | ra0to2 | 0x1); // TODO The gate array doens't even have an address
+                                _gateArray.Data = _ram[_gateArray.Address];
+                                _crtc.Clock();
+                            }  else {
+                                var ra0to2 = (_crtc.RowAddress & 0x7) << 11;
+                                var ma12to13 = (_crtc.MemoryAddress & 0x3000) << 2;
+                                var ma0to9 = (_crtc.MemoryAddress & 0x3ff) << 1;
+                                _gateArray.Address = (ushort)(ma0to9 | ma12to13 | ra0to2); // TODO The gate array doesn't even have an address
+                                _gateArray.Data = _ram[_gateArray.Address];
+                            }
                         }
                         
                         if (_gateArray.CpuClock) {
@@ -264,7 +262,7 @@ namespace CPCSharp.Core
                                 Console.WriteLine($"Frequency: {calculatedMhzFrequency}MHz");
                             }
                             _cpu.Clock();
-                            if (_cpu.IORQ) {
+                            if (_cpu.IORQ && !_cpu.WAIT) {
                                 var ioDevice = GetIoDeviceForAddress(_cpu.Address);
                                 if (ioDevice != null) {
                                     ioDevice.Address = _cpu.Address;
