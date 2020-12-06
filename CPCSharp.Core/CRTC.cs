@@ -61,10 +61,11 @@ namespace CPCSharp.Core {
 
             if (_linesCompleted >= _verticalTotal*_maxRasterAddress) {
                 MemoryAddress = (_startAddressHigh << 8) | _startAddressLow;
+                RowAddress = 0;
                 _linesCompleted = 0;
             }
 
-            if (_clockCyclesThisLine > _horizontalDisplayed || _linesCompleted > _verticalDisplayed * _maxRasterAddress) {
+            if (_clockCyclesThisLine >= _horizontalDisplayed || _linesCompleted >= _verticalDisplayed * _maxRasterAddress) {
                 DISP = true;
             } else {
                 DISP = false;
