@@ -39,9 +39,7 @@ namespace CPCSharp.App {
         public void SendPixels(Color[] pixels)
         {
             foreach (var pixel in pixels) {
-                if (dataIndex < data.Length) { // TODO Why do we need this if?
-                    data[dataIndex++] = (int)Avalonia.Media.Color.FromRgb(pixel.R, pixel.G, pixel.B).ToUint32(); // TODO should this be casted to int?
-                }
+                data[dataIndex++] = (int)Avalonia.Media.Color.FromRgb(pixel.R, pixel.G, pixel.B).ToUint32();
             }
         }
 

@@ -12,7 +12,7 @@ namespace CPCSharp.Core {
         private int _clockCyclesThisLine = 0;
         private int _numberOfLines = 0;
         private int _currentMemoryAddress = 0;
-        private int _horinzontalSyncPosition = 46; // TODO allow this to be set via IORQ
+        private int _horizontalSyncPosition = 46; // TODO allow this to be set via IORQ
         private int _hsyncWidth = 14; // TODO extract this from Vsync/hsync register value set via IORQ
 
         private int _vsyncWidth = 8;
@@ -36,10 +36,16 @@ namespace CPCSharp.Core {
 
         public void Clock() 
         {
-            if (_clockCyclesThisLine >= _horinzontalSyncPosition && _clockCyclesThisLine < _horinzontalSyncPosition + _hsyncWidth) {
+            if (_clockCyclesThisLine >= _horizontalSyncPosition && _clockCyclesThisLine < _horizontalSyncPosition + _hsyncWidth) {
                 HSYNC = true;
             } else {
                 HSYNC = false;
+            }
+
+            if (!DISP) {
+                if (_clockCyclesThisLine == _horizontalDisplayed && RowAddress != _maxRasterAddress) {
+                    MemoryAddress -= _horizontalDisplayed;
+                }
             }
 
             if (_clockCyclesThisLine == _horizontalTotal) {
@@ -47,7 +53,6 @@ namespace CPCSharp.Core {
                     RowAddress = 0;
                 } else {
                     RowAddress++;
-                    MemoryAddress -= _horizontalDisplayed;
                 }
                 _clockCyclesThisLine = 0;
                 _linesCompleted++;
@@ -55,14 +60,19 @@ namespace CPCSharp.Core {
 
             if (_linesCompleted >= (_verticalSyncPosition * _maxRasterAddress) && _linesCompleted < (_verticalSyncPosition * _maxRasterAddress) + _vsyncWidth) {
                 VSYNC = true;
+                MemoryAddress = (_startAddressHigh << 8) | _startAddressLow;
             } else {
                 VSYNC = false;
             }
 
             if (_linesCompleted >= _verticalTotal*_maxRasterAddress) {
-                MemoryAddress = (_startAddressHigh << 8) | _startAddressLow;
+                
                 RowAddress = 0;
                 _linesCompleted = 0;
+            }
+
+            if (!DISP) {
+                MemoryAddress++;
             }
 
             if (_clockCyclesThisLine >= _horizontalDisplayed || _linesCompleted >= _verticalDisplayed * _maxRasterAddress) {
@@ -71,9 +81,6 @@ namespace CPCSharp.Core {
                 DISP = false;
             }
 
-            if (!DISP) {
-                MemoryAddress++;
-            }
             _clockCyclesThisLine++;
         }
     }

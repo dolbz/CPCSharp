@@ -48,6 +48,7 @@ namespace CPCSharp.Core {
         public static CPCKey CurRight = new CPCKey { line = 0, bitPos = 1 };
         public static CPCKey Shift = new CPCKey { line = 2, bitPos = 5 };
         public static CPCKey Delete = new CPCKey { line = 9, bitPos = 7 };
+        public static CPCKey Comma = new CPCKey { line = 4, bitPos = 7 };
 
         public int line { get; private set; }
         public int bitPos { get; private set; }

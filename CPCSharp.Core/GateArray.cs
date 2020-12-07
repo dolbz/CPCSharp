@@ -64,6 +64,8 @@ namespace CPCSharp.Core
         private int _selectedPenIndex = 0;
 
         private int _hsyncsSinceVsyncStarted;
+
+        private bool _pendingVsyncOff;
         private bool _vsync;
         public bool VSYNC { 
             get => _vsync;
@@ -74,7 +76,7 @@ namespace CPCSharp.Core
                     _hsyncsSinceVsyncStarted = 0;
                 }
                 if (currentValue && !_vsync) {
-                    _renderer.SendVsyncEnd(); // TODO this should be clocked and not done on set right?
+                    _pendingVsyncOff = true;
                 }
             }
         }
@@ -124,9 +126,12 @@ namespace CPCSharp.Core
             } 
         }
 
+        private ushort _address;
         public ushort Address {
-            get;
-            set;
+            get => _address;
+            set {
+                _address = value;
+            }
         }
 
         public GateArray(IScreenRenderer renderer) {
@@ -134,18 +139,25 @@ namespace CPCSharp.Core
         }
 
         public void Clock() {
-            if (CCLK || CCLK_Off) 
+            var sixteenths = _clockTicks % 16;
+
+            if (_pendingVsyncOff) {
+                _renderer.SendVsyncEnd(); 
+                _pendingVsyncOff = false;
+            }
+
+            if (CCLK || sixteenths == 9) 
             {
                 SendPixels();
             }
 
-            var sixteenths = _clockTicks % 16;
+            
             _clockTicks++;
             CpuClock = _clockTicks % 4 == 0;
             CCLK = sixteenths == 11;
             CCLK_Off = sixteenths == 3;
             READY = sixteenths >= 0 && sixteenths < 4;
-            CPUADDR = sixteenths >=0 && sixteenths < 8;
+            CPUADDR = sixteenths >= 0 && sixteenths < 8;
 
             CheckHsyncStatus();
             CheckVsyncStatus();

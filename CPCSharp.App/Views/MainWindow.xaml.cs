@@ -57,7 +57,8 @@ namespace CPCSharp.App.Views
             { Key.Down, CPCKey.CurDown },
             { Key.Left, CPCKey.CurLeft },
             { Key.Right, CPCKey.CurRight },
-            { Key.Back, CPCKey.Delete }
+            { Key.Back, CPCKey.Delete },
+            { Key.OemComma, CPCKey.Comma }
         };
 
         public MainWindow()

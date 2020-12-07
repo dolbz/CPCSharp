@@ -218,13 +218,13 @@ namespace CPCSharp.Core
                 }
                 lock(_cpu.CpuStateLock) {
                     do {
+                        _gateArray.Clock();
+
                         _gateArray.HSYNC = _crtc.HSYNC;
                         _gateArray.VSYNC = _crtc.VSYNC;
                         _gateArray.DISPEN = _crtc.DISP;
                         _gateArray.M1 = _cpu.M1;
                         _gateArray.IORQ = _cpu.IORQ;
-
-                        _gateArray.Clock();
 
                         _cpu.INT = _gateArray.INTERRUPT;
                         _cpu.WAIT = !_gateArray.READY;
