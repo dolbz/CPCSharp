@@ -150,7 +150,6 @@ namespace CPCSharp.Core
             {
                 SendPixels();
             }
-
             
             _clockTicks++;
             CpuClock = _clockTicks % 4 == 0;
@@ -181,6 +180,7 @@ namespace CPCSharp.Core
         }
 
         private Color[] GeneratePixelsForScreenMode() {
+            // Pixel -> Palette mappings from http://cpctech.cpcwiki.de/docs/graphics.html
             switch (_screenMode) {
                 case ScreenMode.Mode0:
                     return ExtractMode0PixelsFromData();
@@ -210,34 +210,34 @@ namespace CPCSharp.Core
         }
 
         private Color[] ExtractMode1PixelsFromData() {
-            var pixel0Bit0 = (_data & 0x8) >> 3;
-            var pixel0Bit1 = (_data & 0x80) >> 6;
+            var pixel0Bit1 = (_data & 0x8) >> 2;
+            var pixel0Bit0 = (_data & 0x80) >> 7;
             var pixel0Value = _penColours[pixel0Bit1 | pixel0Bit0];
 
-            var pixel1Bit0 = (_data & 0x4) >> 2;
-            var pixel1Bit1 = (_data & 0x40) >> 5;
+            var pixel1Bit1 = (_data & 0x4) >> 3;
+            var pixel1Bit0 = (_data & 0x40) >> 6;
             var pixel1Value = _penColours[pixel1Bit1 | pixel1Bit0];
 
-            var pixel2Bit0 = (_data & 0x2) >> 1;
-            var pixel2Bit1 = (_data & 0x20) >> 4;
+            var pixel2Bit1 = (_data & 0x2) >> 2;
+            var pixel2Bit0 = (_data & 0x20) >> 5;
             var pixel2Value = _penColours[pixel2Bit1 | pixel2Bit0];
 
-            var pixel3Bit0 = (_data & 0x1);
-            var pixel3Bit1 = (_data & 0x10) >> 3;
+            var pixel3Bit1 = (_data & 0x1) << 1;
+            var pixel3Bit0 = (_data & 0x10) >> 4;
             var pixel3Value = _penColours[pixel3Bit1 | pixel3Bit0];
 
             return new Color[] { ColourMap[pixel0Value], ColourMap[pixel1Value], ColourMap[pixel2Value], ColourMap[pixel3Value] };
         }
 
         private Color[] ExtractMode2PixelsFromData() {
-            var pixel7Value = _penColours[(_data & 0x80) >> 7];
-            var pixel6Value = _penColours[(_data & 0x40) >> 6];
-            var pixel5Value = _penColours[(_data & 0x20) >> 5];
-            var pixel4Value = _penColours[(_data & 0x10) >> 4];
-            var pixel3Value = _penColours[(_data & 0x8) >> 3];
-            var pixel2Value = _penColours[(_data & 0x4) >> 2];
-            var pixel1Value = _penColours[(_data & 0x2) >> 1];
-            var pixel0Value = _penColours[_data & 0x1];
+            var pixel0Value = _penColours[(_data & 0x80) >> 7];
+            var pixel1Value = _penColours[(_data & 0x40) >> 6];
+            var pixel2Value = _penColours[(_data & 0x20) >> 5];
+            var pixel3Value = _penColours[(_data & 0x10) >> 4];
+            var pixel4Value = _penColours[(_data & 0x8) >> 3];
+            var pixel5Value = _penColours[(_data & 0x4) >> 2];
+            var pixel6Value = _penColours[(_data & 0x2) >> 1];
+            var pixel7Value = _penColours[_data & 0x1];
 
             return new Color[] { 
                 ColourMap[pixel0Value], 
