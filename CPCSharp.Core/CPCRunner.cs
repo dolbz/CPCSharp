@@ -128,6 +128,7 @@ namespace CPCSharp.Core
         }
 
         private void SetupIODevices() {
+            _ioDevices.Add(_crtc);
             _ioDevices.Add(_gateArray);
             _ioDevices.Add(new PPI(_crtc));
         }

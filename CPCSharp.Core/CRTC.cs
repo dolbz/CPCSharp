@@ -4,7 +4,7 @@ namespace CPCSharp.Core {
     /// <summary>
     /// Provides functionality as it's configured by default in the CPC.
     /// </summary>
-    public class CRTC {
+    public class CRTC : IODevice {
         public bool HSYNC { get;set; }
         public bool VSYNC { get;set; }
         public bool DISP { get; set; }
@@ -31,10 +31,68 @@ namespace CPCSharp.Core {
 
         private int _maxRasterAddress = 7;
 
+        public byte _selectedRegister;
+
         public int RowAddress { get; set; }
         public int MemoryAddress { get; set; }
+        public ushort Address { private get; set; }
 
-        public void Clock() 
+        public byte Data { 
+            get => throw new NotImplementedException(); 
+            set
+            {
+                switch(Address & 0xff00) {
+                    case 0xbc00:
+                        _selectedRegister = value;
+                        break;
+                    case 0xbd00:
+                        switch(_selectedRegister) {
+                            case 0:
+                                _horizontalTotal = value;
+                                break;
+                            case 1:
+                                _horizontalDisplayed = value;
+                                break;
+                            case 2:
+                                _horizontalSyncPosition = value;
+                                break;
+                            case 3:
+                                // TODO _hsyncWidth = 
+                                break;
+                            case 4:
+                                _verticalTotal = value;
+                                break;
+                            case 5:
+                                // _verticalTotalAdjust = TODOb
+                                break;
+                            case 6:
+                                _verticalDisplayed = value;
+                                break;
+                            case 7:
+                                _verticalSyncPosition = value;
+                                break;
+                            case 9:
+                                _maxRasterAddress = value;
+                                break;
+                            case 12:
+                                _startAddressHigh = value;
+                                break;
+                            case 13:
+                                _startAddressLow = value;
+                                break;
+                            default:
+                                // Function ot supported at the moment. Do nothing
+                                break;
+                        }
+                        break;
+                    default:
+                        // Not currently supported
+                        break;
+                }
+            } 
+        }
+
+        public void Clock()
         {
             if (_clockCyclesThisLine >= _horizontalSyncPosition && _clockCyclesThisLine < _horizontalSyncPosition + _hsyncWidth) {
                 HSYNC = true;
@@ -82,6 +140,12 @@ namespace CPCSharp.Core {
             }
 
             _clockCyclesThisLine++;
+        }
+
+        public bool ActiveAtAddress(ushort address)
+        {
+            var significantAddressBits = (address & 0xff00);
+            return  significantAddressBits >= 0xbc00 && significantAddressBits <= 0xbf00;
         }
     }
 }
