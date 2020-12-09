@@ -9,27 +9,28 @@ namespace CPCSharp.Core {
         public bool VSYNC { get;set; }
         public bool DISP { get; set; }
 
-        private int _clockCyclesThisLine = 0;
-        private int _numberOfLines = 0;
-        private int _currentMemoryAddress = 0;
-        private int _horizontalSyncPosition = 46; // TODO allow this to be set via IORQ
-        private int _hsyncWidth = 14; // TODO extract this from Vsync/hsync register value set via IORQ
+        private int _clockCyclesThisLine;
+        private int _numberOfLines;
+        private int _currentMemoryAddress;
+        private int _horizontalSyncPosition;
+        private int _hsyncWidth = 14; // TODO extract this and VSYNC width from register value
 
         private int _vsyncWidth = 8;
 
-        private int _horizontalTotal = 63;
-        private int _horizontalDisplayed = 40;
-        private int _verticalDisplayed = 25;
+        private int _horizontalTotal;
+        private int _horizontalDisplayed;
+        private int _verticalDisplayed;
 
-        private int _verticalSyncPosition = 30;
-        private int _verticalTotal = 38;
+        private int _verticalSyncPosition;
+        private int _verticalTotal;
 
-        private int _linesCompleted = 0;
+        private int _linesCompleted = 0 ;
 
-        private int _startAddressHigh = 0x30;
-        private int _startAddressLow = 0;
+        private int _startAddressHigh;
+        private int _startAddressLow;
 
-        private int _maxRasterAddress = 7;
+        private int _maxRasterAddress;
+        private byte _verticalTotalAdjust;
 
         public byte _selectedRegister;
 
@@ -37,6 +38,12 @@ namespace CPCSharp.Core {
         public int MemoryAddress { get; set; }
         public ushort Address { private get; set; }
 
+
+        public int TotalScanLines => (_verticalTotal*(_maxRasterAddress+1)) + _verticalTotalAdjust;
+        public bool InHsyncRegion => _clockCyclesThisLine >= _horizontalSyncPosition && _clockCyclesThisLine < _horizontalSyncPosition + _hsyncWidth;
+        public bool InVsyncRegion => _linesCompleted >= (_verticalSyncPosition * (_maxRasterAddress+1)) && _linesCompleted < (_verticalSyncPosition * (_maxRasterAddress+1)) + _vsyncWidth;
+
+        public bool InDispEnRegion => _clockCyclesThisLine >= _horizontalDisplayed || _linesCompleted >= _verticalDisplayed * (_maxRasterAddress+1);
         public byte Data { 
             get => throw new NotImplementedException(); 
             set
@@ -63,7 +70,7 @@ namespace CPCSharp.Core {
                                 _verticalTotal = value;
                                 break;
                             case 5:
-                                // _verticalTotalAdjust = TODOb
+                                _verticalTotalAdjust = value;
                                 break;
                             case 6:
                                 _verticalDisplayed = value;
@@ -81,7 +88,7 @@ namespace CPCSharp.Core {
                                 _startAddressLow = value;
                                 break;
                             default:
-                                // Function ot supported at the moment. Do nothing
+                                // Function not supported at the moment. Do nothing
                                 break;
                         }
                         break;
@@ -94,11 +101,7 @@ namespace CPCSharp.Core {
 
         public void Clock()
         {
-            if (_clockCyclesThisLine >= _horizontalSyncPosition && _clockCyclesThisLine < _horizontalSyncPosition + _hsyncWidth) {
-                HSYNC = true;
-            } else {
-                HSYNC = false;
-            }
+            HSYNC = InHsyncRegion;
 
             if (!DISP) {
                 if (_clockCyclesThisLine == _horizontalDisplayed && RowAddress != _maxRasterAddress) {
@@ -106,7 +109,7 @@ namespace CPCSharp.Core {
                 }
             }
 
-            if (_clockCyclesThisLine == _horizontalTotal) {
+            if (_clockCyclesThisLine >= _horizontalTotal) {
                 if (RowAddress == _maxRasterAddress) {
                     RowAddress = 0;
                 } else {
@@ -116,15 +119,14 @@ namespace CPCSharp.Core {
                 _linesCompleted++;
             }
 
-            if (_linesCompleted >= (_verticalSyncPosition * _maxRasterAddress) && _linesCompleted < (_verticalSyncPosition * _maxRasterAddress) + _vsyncWidth) {
+            if (InVsyncRegion) {
                 VSYNC = true;
                 MemoryAddress = (_startAddressHigh << 8) | _startAddressLow;
             } else {
                 VSYNC = false;
             }
 
-            if (_linesCompleted >= _verticalTotal*_maxRasterAddress) {
-                
+            if (_linesCompleted >= TotalScanLines) {                
                 RowAddress = 0;
                 _linesCompleted = 0;
             }
@@ -133,7 +135,7 @@ namespace CPCSharp.Core {
                 MemoryAddress++;
             }
 
-            if (_clockCyclesThisLine >= _horizontalDisplayed || _linesCompleted >= _verticalDisplayed * _maxRasterAddress) {
+            if (InDispEnRegion) {
                 DISP = true;
             } else {
                 DISP = false;
