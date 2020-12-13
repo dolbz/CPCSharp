@@ -28,7 +28,7 @@ namespace CPCSharp.Core
 
         private readonly GateArray _gateArray;
 
-        private CRTC _crtc = new CRTC();
+        private readonly CRTC _crtc;
 
         private List<IODevice> _ioDevices = new List<IODevice>();
 
@@ -45,6 +45,7 @@ namespace CPCSharp.Core
         
         public CPCRunner(IScreenRenderer renderer) {
             _gateArray = new GateArray(renderer);
+            _crtc = new CRTC(renderer, _gateArray);
         }
 
         public void AccessCpuState(Action<Z80Cpu, byte[]> cpuAction) {

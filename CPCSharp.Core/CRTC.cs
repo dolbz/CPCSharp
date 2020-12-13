@@ -1,10 +1,16 @@
+using System.Drawing;
 using System;
 using System.Security;
+using CPCSharp.Core.Interfaces;
+
 namespace CPCSharp.Core {
     /// <summary>
     /// Provides functionality as it's configured by default in the CPC.
     /// </summary>
     public class CRTC : IODevice {
+
+        private readonly IScreenRenderer _screenRenderer;
+        private readonly GateArray _gateArray;
         public bool HSYNC { get;set; }
         public bool VSYNC { get;set; }
         public bool DISP { get; set; }
@@ -44,6 +50,12 @@ namespace CPCSharp.Core {
         public bool InVsyncRegion => _linesCompleted >= (_verticalSyncPosition * (_maxRasterAddress+1)) && _linesCompleted < (_verticalSyncPosition * (_maxRasterAddress+1)) + _vsyncWidth;
 
         public bool InDispEnRegion => _clockCyclesThisLine >= _horizontalDisplayed || _linesCompleted >= _verticalDisplayed * (_maxRasterAddress+1);
+        
+        public CRTC(IScreenRenderer screenRenderer, GateArray gateArray) {
+            _screenRenderer = screenRenderer;
+            _gateArray = gateArray;
+        }
+
         public byte Data { 
             get => throw new NotImplementedException(); 
             set
@@ -91,12 +103,25 @@ namespace CPCSharp.Core {
                                 // Function not supported at the moment. Do nothing
                                 break;
                         }
+                        _screenRenderer.ResolutionChanged(CalculateDimensions());
                         break;
                     default:
                         // Not currently supported
                         break;
                 }
             } 
+        }
+
+        private Size CalculateDimensions() {
+            var width = (_horizontalTotal - _hsyncWidth) * 2 * _gateArray.PixelsPerByte;
+            var height = TotalScanLines;
+            if (height <= 0) { // TODO what are the values on CRTC rseet?
+                height = 1;
+            }
+            if (width <= 0) {
+                width = 1;
+            }
+            return new Size(width, height);
         }
 
         public void Clock()

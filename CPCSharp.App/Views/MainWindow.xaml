@@ -12,6 +12,8 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
     <StackPanel>
-        <Image Width="640" Height="400" Source="{Binding ScreenBitmap}" />
+        <Border Background="Black" BorderBrush="Gainsboro" BorderThickness="1">
+            <Image Stretch="Fill" Width="800" Height="600" Source="{Binding ScreenBitmap}" />
+        </Border>
     </StackPanel>
 </Window>

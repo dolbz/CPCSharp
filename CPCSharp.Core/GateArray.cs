@@ -83,12 +83,16 @@ namespace CPCSharp.Core
 
         private bool _hsync;
         private int _hsyncCompletedCount;
+        private bool _pendingHsyncOff;
+
         public bool HSYNC { 
+            get => _hsync;
             set {
                 var currentValue = _hsync;
                 _hsync = value;
                 if (currentValue && !_hsync) {
                     _hsyncCompletedCount++;
+                    _pendingHsyncOff = true;
                     if (_vsync) {
                         _hsyncsSinceVsyncStarted++;
                     }
@@ -134,6 +138,21 @@ namespace CPCSharp.Core
             }
         }
 
+        public int PixelsPerByte {
+            get {
+                switch (_screenMode) {
+                    case ScreenMode.Mode0:
+                        return 2;
+                    case ScreenMode.Mode1:
+                        return 4;
+                    case ScreenMode.Mode2:
+                        return 8;
+                    default:
+                        return 0;
+                }
+            }
+        }
+
         public GateArray(IScreenRenderer renderer) {
             _renderer = renderer;
         }
@@ -145,8 +164,12 @@ namespace CPCSharp.Core
                 _renderer.SendVsyncEnd(); 
                 _pendingVsyncOff = false;
             }
+            if (_pendingHsyncOff) {
+                _renderer.SendHsyncEnd();
+                _pendingHsyncOff = false;
+            }
 
-            if (CCLK || sixteenths == 9) 
+            if ((CCLK || sixteenths == 9) && !(HSYNC || VSYNC)) 
             {
                 SendPixels();
             }
@@ -175,6 +198,14 @@ namespace CPCSharp.Core
             // pixels changing after they've been sent in a batch
             if (!DISPEN) {
                 var pixels = GeneratePixelsForScreenMode();
+                _renderer.SendPixels(pixels);
+            } 
+            else if (DISPEN)
+            {
+                var pixels = new Color[PixelsPerByte];
+                for (int i = 0; i < PixelsPerByte; i++) {
+                    pixels[i] = ColourMap[_borderColour];
+                }
                 _renderer.SendPixels(pixels);
             }
         }
@@ -226,7 +257,10 @@ namespace CPCSharp.Core
             var pixel3Bit0 = (_data & 0x10) >> 4;
             var pixel3Value = _penColours[pixel3Bit1 | pixel3Bit0];
 
-            return new Color[] { ColourMap[pixel0Value], ColourMap[pixel1Value], ColourMap[pixel2Value], ColourMap[pixel3Value] };
+            return new Color[] { ColourMap[pixel0Value], 
+                                 ColourMap[pixel1Value],
+                                 ColourMap[pixel2Value], 
+                                 ColourMap[pixel3Value] };
         }
 
         private Color[] ExtractMode2PixelsFromData() {
@@ -296,7 +330,12 @@ namespace CPCSharp.Core
 
         private void SelectPenColour() 
         {
-            _penColours[_selectedPenIndex] = _data & 0x1f;
+            var colour = _data & 0x1f;
+            if (_selectedPenIndex == -1) {
+                _borderColour = colour;
+            } else {
+                _penColours[_selectedPenIndex] = colour;
+            }
         }
 
         private void SelectPen() {
@@ -310,7 +349,7 @@ namespace CPCSharp.Core
             // 1	x
             // 0	x
 
-            if ((_data & 0x16) == 0x16) {
+            if ((_data & 0x10) == 0x10) {
                 _selectedPenIndex = -1; // -1 is a magic value indicating border colour pen is selected
             } else {
                 var penNumber = _data & 0x0f;
