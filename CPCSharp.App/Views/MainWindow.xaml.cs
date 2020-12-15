@@ -58,7 +58,10 @@ namespace CPCSharp.App.Views
             { Key.Left, CPCKey.CurLeft },
             { Key.Right, CPCKey.CurRight },
             { Key.Back, CPCKey.Delete },
-            { Key.OemComma, CPCKey.Comma }
+            { Key.OemComma, CPCKey.Comma },
+            { Key.Oem4, CPCKey.AtSymbol },
+            { Key.OemCloseBrackets, CPCKey.OpenSquareBracket },
+            { Key.Tab, CPCKey.Tab }
         };
 
         public MainWindow()
@@ -75,18 +78,28 @@ namespace CPCSharp.App.Views
 
         void MainWindow_KeyDown(object sender, KeyEventArgs e) {
             Console.WriteLine("Down:" + e.Key.ToString());
-            e.Handled = true;
 
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Alt) && e.Key == Key.Return) {
+                KeyboardState.Instance.KeyDown(CPCKey.Enter);
+                e.Handled = true;
+            }
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Control)) {
+                KeyboardState.Instance.KeyDown(CPCKey.Control);
+            }
             if (e.KeyModifiers.HasFlag(KeyModifiers.Shift)) {
                 KeyboardState.Instance.KeyDown(CPCKey.Shift);
             }
-            if (KeyMapping.ContainsKey(e.Key)) {
+            if (KeyMapping.ContainsKey(e.Key) && !e.Handled) {
                 KeyboardState.Instance.KeyDown(KeyMapping[e.Key]);
             }
+            e.Handled = true;
         }
         void MainWindow_KeyUp(object sender, KeyEventArgs e) {
             Console.WriteLine("Up: " + e.Key.ToString());
             e.Handled = true;
+            if (e.Key == Key.Return) {
+                KeyboardState.Instance.KeyUp(CPCKey.Enter);
+            }
             if (!e.KeyModifiers.HasFlag(KeyModifiers.Shift)) {
                 KeyboardState.Instance.KeyUp(CPCKey.Shift);
             }
