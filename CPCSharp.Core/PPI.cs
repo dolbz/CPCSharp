@@ -35,6 +35,11 @@ namespace CPCSharp.Core {
 
         private readonly PSG _psg;
 
+        private bool _casIn;
+        public bool CassetteIn { get => _casIn; set {
+            _casIn = value;
+        } }
+
         public byte Data { 
             get {
                 var maskedAddress = (Address & 0xf700);
@@ -42,10 +47,12 @@ namespace CPCSharp.Core {
                     return _psg.Data;
                 }
                 else if (maskedAddress == PortBAddressMask) {
+                    var casIn = (CassetteIn ? 0x1 : 0x0) << 7;
                     byte manufacturer = 0b00001110;
                     byte vsync = (byte)(_crtc.VSYNC ? 0x1 : 0x0);
 
-                    return (byte)(manufacturer | vsync);
+                    var val = (byte)(casIn | manufacturer | vsync);
+                    return val;
                 }
                 return 0; // Shouldn't technically hit this...
             } 
@@ -79,6 +86,8 @@ namespace CPCSharp.Core {
             } 
         }
 
+        public bool TapeMotorOn { get; private set; }
+
         private ushort _address;
         public ushort Address 
         { 
@@ -103,7 +112,8 @@ namespace CPCSharp.Core {
         private void ApplyPortCOutput(byte output) {
             _psg.KeyboardLine = (byte)(output & 0x0f);
             _psg.BDIR = (output >> 7) == 0x1;
-            _psg.BC1 = ((output >> 6) & 0x1) == 0x1; 
+            _psg.BC1 = ((output >> 6) & 0x1) == 0x1;
+            TapeMotorOn = ((output >> 4) & 0x1) == 0x1;
         }
     }
 }

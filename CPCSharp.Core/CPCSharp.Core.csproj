@@ -14,4 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Z80Sharp\Z80\Z80.csproj" />
   </ItemGroup>
+    <ItemGroup>
+    <ProjectReference Include="..\..\CDTSharp\CDTSharp.Core\CDTSharp.Core.csproj" />
+  </ItemGroup>
 </Project>

@@ -7,6 +7,8 @@ using System.Threading;
 using System.Reflection;
 using System.Collections.Generic;
 using CPCSharp.Core.Interfaces;
+using CDTSharp.Core.Playback;
+using CDTSharp.Core;
 
 namespace CPCSharp.Core
 {
@@ -29,7 +31,9 @@ namespace CPCSharp.Core
         private readonly GateArray _gateArray;
 
         private readonly CRTC _crtc;
+        private readonly PPI _ppi;
 
+        private PlayableTape _tape;
         private List<IODevice> _ioDevices = new List<IODevice>();
 
         private AutoResetEvent _cpuBreakingSignal = new AutoResetEvent(false);
@@ -46,6 +50,8 @@ namespace CPCSharp.Core
         public CPCRunner(IScreenRenderer renderer) {
             _gateArray = new GateArray(renderer);
             _crtc = new CRTC(renderer, _gateArray);
+            _ppi = new PPI(_crtc);
+            _tape = new PlayableTape(CDTReader.ReadCDTFile("/Users/nrandle/Documents/CPC/games/CDT/Source6 - amstrad.serveftp.com/Pacific (UK) (1986) [Original] [TAPE].cdt"));
         }
 
         public void AccessCpuState(Action<Z80Cpu, byte[]> cpuAction) {
@@ -131,7 +137,7 @@ namespace CPCSharp.Core
         private void SetupIODevices() {
             _ioDevices.Add(_crtc);
             _ioDevices.Add(_gateArray);
-            _ioDevices.Add(new PPI(_crtc));
+            _ioDevices.Add(_ppi);
         }
 
         private IODevice GetIoDeviceForAddress(ushort address) {
@@ -264,6 +270,9 @@ namespace CPCSharp.Core
                                 Console.WriteLine($"Frequency: {calculatedMhzFrequency}MHz");
                             }
                             _cpu.Clock();
+                            if (_ppi.TapeMotorOn) {
+                                _ppi.CassetteIn = _tape.ClockTick();
+                            }
                             if (_cpu.IORQ && !_cpu.WAIT) {
                                 var ioDevice = GetIoDeviceForAddress(_cpu.Address);
                                 if (ioDevice != null) {
