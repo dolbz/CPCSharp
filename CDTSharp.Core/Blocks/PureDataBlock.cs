@@ -1,0 +1,29 @@
+using CDTSharp.Core.Blocks;
+
+namespace CDTSharp.Core.Blocks
+{
+    public class PureDataBlock : IBlock {
+        public int LengthOfZeroBitPulse { get; set; }
+        public int LengthOfOneBitPulse { get; set; }
+        public byte UsedBitsInLastByte { get; set; }
+        public int PauseLengthAfterBlock { get; set; }
+        public int LengthOfBlockData { get; set; }
+
+        public long DataCdtOffset { get; set; }
+
+        public byte[] Data { get; set; }
+
+        public string Description {
+            get {
+                return "Pure Data Block\n" +
+                       "-------------------\n" +
+                       $"Length of ZERO bit pulse: {LengthOfZeroBitPulse}\n" +
+                       $"Length of ONE bit pulse: {LengthOfOneBitPulse}\n" +
+                       $"Used bits in last byte: {UsedBitsInLastByte}\n" +
+                       $"Pause length after block: {PauseLengthAfterBlock}\n" +
+                       $"Length of data: {LengthOfBlockData}\n" +
+                       $"Data offset in CDT: 0x{DataCdtOffset:x4}";
+            }
+        }
+    }
+}
