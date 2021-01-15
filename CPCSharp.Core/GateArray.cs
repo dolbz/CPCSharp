@@ -53,7 +53,7 @@ namespace CPCSharp.Core
         };
 
         private readonly IScreenRenderer _renderer;
-        private uint _clockTicks = 0;
+        private ulong _clockTicks = 0;
         public bool LowerROMEnabled { get; set;} = true;
         public bool UpperROMEnabled { get; set;} = true;
 

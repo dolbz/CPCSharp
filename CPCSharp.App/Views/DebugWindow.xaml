@@ -16,8 +16,11 @@
   </Window.Resources>
   <StackPanel Orientation="Vertical">
     <StackPanel Orientation="Horizontal">
-      <Button Command="{Binding Step}" Width="50" Height="50" Content="Step"/>
-      <Button Command="{Binding Reset}" Width="50" Height="50" Content="Reset"/>
+      <Button Command="{Binding Continue}" Width="50" Content="Continue"/>
+      <Button Command="{Binding Step}" Width="50" Content="Step"/>
+      <Button Command="{Binding StepOver}" Width="50" Content="Step Over" />
+      <Button Command="{Binding Reset}" Width="50" Content="Reset"/>
+      <Button Command="{Binding MemoryView}" Width="50" Content="Memory View"/>
     </StackPanel>
     <StackPanel Orientation="Horizontal">
       <!--<ItemsControl Items="{Binding ProgramListing}">
@@ -58,6 +61,47 @@
           <TextBlock Text="PC: " /><TextBlock Text="{Binding Snapshot.Cpu.PC, Converter={StaticResource ShortHexValueConverter}}" />
           <TextBlock Text="Frequency: " /><TextBlock Text="{Binding Snapshot.FrequencyMHz }" /><TextBlock Text="MHz" />
         </StackPanel>
+        <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto,Auto"  Margin="4">
+          <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
+            <TextBlock Text="A: " /><TextBlock Text="{Binding Snapshot.Cpu.A, Converter={StaticResource ByteHexValueConverter}}" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
+            <TextBlock Text="F: " /><TextBlock Text="{Binding Snapshot.Cpu.F, Converter={StaticResource ByteHexValueConverter}}" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="2">
+            <TextBlock Text="AF': " /><TextBlock Text="{Binding Snapshot.Cpu.AF_, Converter={StaticResource ShortHexValueConverter}}" />
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0">
+            <TextBlock Text="B: " /><TextBlock Text="{Binding Snapshot.Cpu.B, Converter={StaticResource ByteHexValueConverter}}" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1">
+            <TextBlock Text="C: " /><TextBlock Text="{Binding Snapshot.Cpu.C, Converter={StaticResource ByteHexValueConverter}}" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="2">
+            <TextBlock Text="BC': " /><TextBlock Text="{Binding Snapshot.Cpu.BC_, Converter={StaticResource ShortHexValueConverter}}" />
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="0">
+            <TextBlock Text="D: " /><TextBlock Text="{Binding Snapshot.Cpu.D, Converter={StaticResource ByteHexValueConverter}}" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1">
+            <TextBlock Text="E: " /><TextBlock Text="{Binding Snapshot.Cpu.E, Converter={StaticResource ByteHexValueConverter}}" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="2">
+            <TextBlock Text="DE': " /><TextBlock Text="{Binding Snapshot.Cpu.DE_, Converter={StaticResource ShortHexValueConverter}}" />
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0">
+            <TextBlock Text="H: " /><TextBlock Text="{Binding Snapshot.Cpu.H, Converter={StaticResource ByteHexValueConverter}}" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1">
+            <TextBlock Text="L: " /><TextBlock Text="{Binding Snapshot.Cpu.L, Converter={StaticResource ByteHexValueConverter}}" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="2">
+            <TextBlock Text="HL': " /><TextBlock Text="{Binding Snapshot.Cpu.HL_, Converter={StaticResource ShortHexValueConverter}}" />
+          </StackPanel>
+        </Grid>
         <TextBlock Text="Stack: " />
         <ItemsControl Items="{Binding Snapshot.Stack}">
             <ItemsControl.ItemsPanel>
@@ -67,10 +111,27 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding, Converter={StaticResource ByteHexValueConverter}}" />
+                    <TextBlock Text="{Binding, Converter={StaticResource ShortHexValueConverter}}" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+      </StackPanel>
+    </StackPanel>
+    <StackPanel Orientation="Horizontal">
+      <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="Breakpoint Address: " />
+          <TextBox Width="50" Text="{Binding NewBreakpointAddress}" />
+          <Button Command="{Binding AddBreakpoint}" Width="50" Content="Add" />
+          <Button Command="{Binding RemoveBreakpoint}" Width="50" Content="Remove" />
+        </StackPanel>
+        <ListBox Items="{Binding Breakpoints}" SelectedIndex="{Binding SelectedBreakpointIndex}" Width="200" Height="300">
+          <ListBox.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding Address, Converter={StaticResource ShortHexValueConverter}}" />
+              </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>    
       </StackPanel>
     </StackPanel>
   </StackPanel>

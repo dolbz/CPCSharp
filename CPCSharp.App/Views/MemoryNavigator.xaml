@@ -1,0 +1,26 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:CPCSharp.App.ViewModels;assembly=CPCSharp.App"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="CPCSharp.App.Views.MemoryNavigator"
+        xmlns:conv="clr-namespace:CPCSharp.App.ValueConverters"
+        Title="AvaloniaAppTemplate">
+  <Design.DataContext>
+    <vm:Memory/>
+  </Design.DataContext>
+  <Window.Resources>
+    <conv:ByteHexValueConverter x:Key="ByteHexValueConverter" />
+    <conv:ShortHexValueConverter x:Key="ShortHexValueConverter" />
+  </Window.Resources>
+  <StackPanel Orientation="Vertical">
+    <ListBox FontFamily="Menlo, Monaco, 'Courier New', monospace" Items="{Binding RamListing}" Width="1000" SelectedIndex="{Binding SelectedRamIndex}" AutoScrollToSelectedItem="True">
+      <ListBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding}" />
+          </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </StackPanel>
+</Window>

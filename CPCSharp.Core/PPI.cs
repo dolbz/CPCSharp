@@ -50,8 +50,9 @@ namespace CPCSharp.Core {
                     var casIn = (CassetteIn ? 0x1 : 0x0) << 7;
                     byte manufacturer = 0b00001110;
                     byte vsync = (byte)(_crtc.VSYNC ? 0x1 : 0x0);
+                    byte refreshRate = 0b00010000;
 
-                    var val = (byte)(casIn | manufacturer | vsync);
+                    var val = (byte)(casIn | refreshRate | manufacturer | vsync);
                     return val;
                 }
                 return 0; // Shouldn't technically hit this...

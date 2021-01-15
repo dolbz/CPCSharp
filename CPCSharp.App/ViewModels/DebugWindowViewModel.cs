@@ -1,8 +1,14 @@
+using System.ComponentModel;
+using System;
+using System.Globalization;
 using System.Linq;
 using System.Collections.Generic;
 using CPCSharp.Core;
 using ReactiveUI;
 using System.Timers;
+using CPCSharp.App.Views;
+using Avalonia.Threading;
+using CPCSharp.App.Models;
 
 namespace CPCSharp.ViewModels
 {
@@ -10,7 +16,7 @@ namespace CPCSharp.ViewModels
         public string AsmDescription { get; set; }
     }
 
-    public class DebugWindowViewModel : ViewModelBase {
+    public class DebugWindowViewModel : ViewModelBase, INotifyPropertyChanged {
         private CPCRunner _runner;
 
         private List<ProgramListingEntry> _programListing;
@@ -47,7 +53,25 @@ namespace CPCSharp.ViewModels
         private int SelectedRamIndex {
             get => _selectedRamIndex;
             set => this.RaiseAndSetIfChanged(ref _selectedRamIndex, value);
-        }       
+        }
+
+        private int _selectedBreakpointIndex = -1;
+        private int SelectedBreakpointIndex {
+            get => _selectedBreakpointIndex;
+            set => this.RaiseAndSetIfChanged(ref _selectedBreakpointIndex, value);
+        }
+
+        private string _newBreakpointAddress;
+        public string NewBreakpointAddress {
+            get => _newBreakpointAddress;
+            set => this.RaiseAndSetIfChanged(ref _newBreakpointAddress, value);
+        }
+
+        private List<Breakpoint> _breakpoints = new List<Breakpoint>();
+        public List<Breakpoint> Breakpoints {
+            get => _breakpoints;
+            set => this.RaiseAndSetIfChanged(ref _breakpoints, value);
+        }  
 
         private MachineStateSnapshot _snapshot;
         public MachineStateSnapshot Snapshot { 
@@ -57,7 +81,6 @@ namespace CPCSharp.ViewModels
 
         public DebugWindowViewModel(CPCRunner runner) {
             _runner =  runner;
-            
             var timer = new Timer(125);
             timer.Elapsed += OnUpdate;
             timer.Start();
@@ -67,8 +90,56 @@ namespace CPCSharp.ViewModels
             _runner.Step();
         }
 
+        public void Continue() {
+            _runner.Continue();
+        }
+
+        public void StepOver() {
+            _runner.StepOver();
+        }
+
         public void Reset() {
             _runner.Reset();
+        }
+
+        public void AddBreakpoint() {
+            var cleanValue = (_newBreakpointAddress ?? string.Empty).Trim().Replace("0x", string.Empty);
+
+            if (cleanValue.Length <= 4) {
+                ushort bpAddress;
+                if (ushort.TryParse(cleanValue, NumberStyles.HexNumber, null, out bpAddress)) {
+                    NewBreakpointAddress = string.Empty;
+                    _runner.AddRamBreakpoint(bpAddress);
+                    
+                    var bp = new Breakpoint {
+                        Address = bpAddress
+                    };
+
+                    var updatedList = new List<Breakpoint>(Breakpoints);
+                    updatedList.Add(bp);
+                    Breakpoints = updatedList;
+                    
+                    // TODO why doesn't this work?
+                    //Breakpoints.Add(bpAddress);
+                    //Dispatcher.UIThread.Post(() => this.RaisePropertyChanged(nameof(Breakpoints)));
+                }
+            }
+        }
+
+        public void RemoveBreakpoint() {
+            if (SelectedBreakpointIndex >= 0 && SelectedBreakpointIndex < Breakpoints.Count) {
+                var bp = Breakpoints[SelectedBreakpointIndex];
+                _runner.RemoveRamBreakpoint(bp.Address);
+                var newBreakpoints = new List<Breakpoint>(Breakpoints);
+                newBreakpoints.Remove(bp);
+                Breakpoints = newBreakpoints;
+            }
+        }
+        
+        public void MemoryView() {
+            new MemoryNavigator() {
+                DataContext = new MemoryNavigatorViewModel(_runner.Ram)
+            }.Show();
         }
 
         private void OnUpdate(object sender, ElapsedEventArgs elapsedEventArgs)

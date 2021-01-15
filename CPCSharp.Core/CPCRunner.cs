@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using CPCSharp.Core.Interfaces;
 using CDTSharp.Core.Playback;
 using CDTSharp.Core;
+using CPCSharp.Core.Debugging;
+using System.Linq;
 
 namespace CPCSharp.Core
 {
@@ -21,6 +23,8 @@ namespace CPCSharp.Core
         private static bool _cpuRunning = false;
         private Z80Cpu _cpu = new Z80Cpu();
         private byte[] _ram = new byte[64*1024];
+        
+        public byte[] Ram => _ram;
 
         private List<string> _lowerRomDisassembly = new List<string>();
         private List<string> _upperRomDisassembly = new List<string>();
@@ -39,7 +43,8 @@ namespace CPCSharp.Core
         private AutoResetEvent _cpuBreakingSignal = new AutoResetEvent(false);
         private AutoResetEvent _uiCompleteSignal = new AutoResetEvent(false);
 
-        private bool _nextInstructionBreakpoint = false;
+        private List<CPCBreakpoint> _breakPoints = new List<CPCBreakpoint>();
+        private List<ushort> _ramBreakpoints = new List<ushort>();
         private bool _breakpointHit;
 
         private Action _renderListener;
@@ -52,6 +57,23 @@ namespace CPCSharp.Core
             _crtc = new CRTC(renderer, _gateArray);
             _ppi = new PPI(_crtc);
             _tape = new PlayableTape(CDTReader.ReadCDTFile("/Users/nrandle/Documents/CPC/games/CDT/Source6 - amstrad.serveftp.com/Pacific (UK) (1986) [Original] [TAPE].cdt"));
+        }
+
+        public void AddRamBreakpoint(ushort addr) {
+            lock (_cpu.CpuStateLock) {
+                if (!_ramBreakpoints.Contains(addr)) {
+                    _ramBreakpoints.Add(addr);
+                }
+            }
+        }
+
+        public void RemoveRamBreakpoint(ushort addr)
+        {
+            lock (_cpu.CpuStateLock) {
+                if (_ramBreakpoints.Contains(addr)) {
+                    _ramBreakpoints.Remove(addr);
+                }
+            }
         }
 
         public void AccessCpuState(Action<Z80Cpu, byte[]> cpuAction) {
@@ -72,8 +94,28 @@ namespace CPCSharp.Core
 
         public void Step() {
             lock(_cpu.CpuStateLock) {
+                var id = Guid.NewGuid();
                 _breakpointHit = false;
-                _nextInstructionBreakpoint = true;
+                var step = new StepBreakpoint();
+                _breakPoints.Add(step);
+            }
+            _uiCompleteSignal.Set();
+        }
+
+        public void Continue() {
+            lock(_cpu.CpuStateLock) {
+                _breakpointHit = false;
+            }
+            _uiCompleteSignal.Set();
+        }
+
+        public void StepOver() {
+            lock(_cpu.CpuStateLock) {
+                var id = Guid.NewGuid();
+                var snapshot = GetStateSnapshot();
+                _breakpointHit = false;
+                var stepOver = new StepOverBreakpoint(snapshot);
+                _breakPoints.Add(stepOver);
             }
             _uiCompleteSignal.Set();
         }
@@ -152,6 +194,7 @@ namespace CPCSharp.Core
         public MachineStateSnapshot GetStateSnapshot() {
             lock(_cpu.CpuStateLock) {
                 var cpuSnapshot = _cpu.GetStateSnapshot();
+                var gateArraySnapshot = GateArraySnapshot.SnapShotFromGateArray(_gateArray);
 
                 var pc = cpuSnapshot.PC;
                 var startPc = (ushort)(pc-20);
@@ -166,14 +209,14 @@ namespace CPCSharp.Core
 
                 var sp = cpuSnapshot.SP;
 
-                var stackContents = new List<byte>();
-                for (int i = 0; i < 30; i++) {
+                var stackContents = new List<ushort>();
+                for (int i = 0; i < 40; i+=2) {
                     var currentSp = (ushort)(sp+i);
 
                     if (sp >= 0xc000) { // CPC normal base of stack
                         break;
                     }
-                    stackContents.Add(_ram[currentSp]);
+                    stackContents.Add((ushort)(_ram[currentSp+1] << 8 | _ram[currentSp]));
                 }
 
                 var timeDelta = currentObservation.ElapsedMilliseconds-previousObservation.ElapsedMilliseconds;
@@ -183,7 +226,8 @@ namespace CPCSharp.Core
 
                 return new MachineStateSnapshot(
                         _breakpointHit,
-                        cpuSnapshot, 
+                        cpuSnapshot,
+                        gateArraySnapshot,
                         listing, 
                         _lowerRomDisassembly, 
                         _upperRomDisassembly, 
@@ -265,9 +309,7 @@ namespace CPCSharp.Core
                                 var timeDelta = currentObservation.ElapsedMilliseconds-previousObservation.ElapsedMilliseconds;
                                 var cycleCountDelta = currentObservation.Count - previousObservation.Count;
 
-                                var calculatedMhzFrequency = (cycleCountDelta/timeDelta)/1_000;
-
-                                Console.WriteLine($"Frequency: {calculatedMhzFrequency}MHz");
+                                var calculatedMhzFrequency = (cycleCountDelta/timeDelta)/1000;
                             }
                             _cpu.Clock();
                             if (_ppi.TapeMotorOn) {
@@ -309,9 +351,19 @@ namespace CPCSharp.Core
                         }
                     } while(!_cpu.NewInstruction && !_breakpointHit);
                     
-                    if (_cpu.NewInstruction && _gateArray.CpuClock && _nextInstructionBreakpoint) {
-                        _breakpointHit = true;
-                        _nextInstructionBreakpoint = false;
+                    CPCBreakpoint bpToRemove = null;
+                    foreach (var bp in _breakPoints) {
+                        if (bp.Hit(GetStateSnapshot())) {
+                            _breakpointHit = true;
+                            if (bp.SingleHit) {
+                                bpToRemove = bp;
+                            }
+                            break;
+                        }
+                    }
+
+                    if (bpToRemove != null) {
+                        _breakPoints.Remove(bpToRemove);
                     }
                 }
             }
