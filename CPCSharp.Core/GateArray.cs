@@ -294,8 +294,10 @@ namespace CPCSharp.Core
 
         private void CheckVsyncStatus() {
             if (_hsyncsSinceVsyncStarted == 2) {
-                if (_hsyncCompletedCount < 32) {
+                if (_hsyncCompletedCount >= 32) {
                     INTERRUPT = true;
+                } else {
+                    Console.WriteLine($"Too close to last Interrupt. Skipping VSYNC interrupt. HSYNC count is ({_hsyncCompletedCount})");
                 }
                 _hsyncsSinceVsyncStarted++; // Stops the interrupt being triggered a second time this scree
                 _hsyncCompletedCount = 0;
@@ -363,6 +365,13 @@ namespace CPCSharp.Core
             // 2	x	1=Lower ROM area disable, 0=Lower ROM area enable
             // 1	x	Screen Mode selection
             // 0    x
+
+            var clearIntMask = 0x10;
+            var clearInterruptCounter = (_data & clearIntMask) != 0;
+            if (clearInterruptCounter) {
+                Console.WriteLine("Resetting interrupt counter");
+                _hsyncCompletedCount = 0;
+            }
 
             var lowerROMConfigMask = 0x4;
             var upperROMConfigMask = 0x8;

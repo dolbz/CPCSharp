@@ -59,9 +59,10 @@ namespace CPCSharp.App.Views
             { Key.Right, CPCKey.CurRight },
             { Key.Back, CPCKey.Delete },
             { Key.OemComma, CPCKey.Comma },
+            { Key.OemPeriod, CPCKey.Period },
             { Key.Oem4, CPCKey.AtSymbol },
             { Key.OemCloseBrackets, CPCKey.OpenSquareBracket },
-            { Key.Tab, CPCKey.Tab }
+            { Key.Tab, CPCKey.Tab },
         };
 
         public MainWindow()

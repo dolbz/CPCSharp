@@ -213,7 +213,7 @@ namespace CPCSharp.Core
                 for (int i = 0; i < 40; i+=2) {
                     var currentSp = (ushort)(sp+i);
 
-                    if (sp >= 0xc000) { // CPC normal base of stack
+                    if (currentSp >= 0xc000) { // CPC normal base of stack
                         break;
                     }
                     stackContents.Add((ushort)(_ram[currentSp+1] << 8 | _ram[currentSp]));

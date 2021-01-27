@@ -147,7 +147,6 @@ namespace CPCSharp.ViewModels
             var snapshot = _runner.GetStateSnapshot();
             Snapshot = snapshot;
 
-            ProgramListing = snapshot.RamProgramListing.Select(x => new ProgramListingEntry{ AsmDescription = x }).ToList();
             if (LowerRomListing == null) {
                 LowerRomListing = snapshot.LowerRomProgramListing.Select(x => new ProgramListingEntry{ AsmDescription = x}).ToList();
                 UpperRomListing = snapshot.UpperRomProgramListing.Select(x => new ProgramListingEntry{ AsmDescription = x}).ToList();
@@ -165,6 +164,7 @@ namespace CPCSharp.ViewModels
                     SelectedUpperRomIndex = Snapshot.Cpu.PC - 0xc000;
                     break;
                 case PhysicalMemoryComponent.RAM:
+                    ProgramListing = snapshot.RamProgramListing.Select(x => new ProgramListingEntry{ AsmDescription = x }).ToList();
                     SelectedRamIndex = 20; // Currently executing instruction is always at position 20 as the RAM list contains a snapshot of that area of RAM rather than the full contents
                     break;
 

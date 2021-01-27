@@ -49,6 +49,7 @@ namespace CPCSharp.Core {
         public static CPCKey Shift = new CPCKey { line = 2, bitPos = 5 };
         public static CPCKey Delete = new CPCKey { line = 9, bitPos = 7 };
         public static CPCKey Comma = new CPCKey { line = 4, bitPos = 7 };
+        public static CPCKey Period = new CPCKey { line = 3, bitPos = 7 };
         public static CPCKey AtSymbol = new CPCKey { line = 3, bitPos = 2 };
         public static CPCKey OpenSquareBracket = new CPCKey { line = 2, bitPos = 1 };
         public static CPCKey Tab = new CPCKey { line = 8, bitPos = 4 };

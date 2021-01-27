@@ -22,5 +22,6 @@
           </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
+    <Button Command="{Binding DumpRam}" Width="50" Content="Dump Memory"/>
   </StackPanel>
 </Window>

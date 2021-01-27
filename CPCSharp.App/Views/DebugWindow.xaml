@@ -102,6 +102,17 @@
             <TextBlock Text="HL': " /><TextBlock Text="{Binding Snapshot.Cpu.HL_, Converter={StaticResource ShortHexValueConverter}}" />
           </StackPanel>
         </Grid>
+        <StackPanel Orientation="Vertical">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Text="IX: " /><TextBlock Text="{Binding Snapshot.Cpu.IX, Converter={StaticResource ShortHexValueConverter}}" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Text="IY: " /><TextBlock Text="{Binding Snapshot.Cpu.IY, Converter={StaticResource ShortHexValueConverter}}" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Text="SP: " /><TextBlock Text="{Binding Snapshot.Cpu.SP, Converter={StaticResource ShortHexValueConverter}}" />
+          </StackPanel>
+        </StackPanel>
         <TextBlock Text="Stack: " />
         <ItemsControl Items="{Binding Snapshot.Stack}">
             <ItemsControl.ItemsPanel>

@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -46,6 +48,11 @@ namespace CPCSharp.ViewModels
             }
 
             RamListing = listing;
+        }
+
+        public async Task DumpRam() {
+            Console.WriteLine("Dumping RAM");
+            await File.WriteAllBytesAsync("dump.bin", _ram);
         }
     }
 }
