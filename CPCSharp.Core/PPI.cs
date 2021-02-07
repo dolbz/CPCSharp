@@ -1,3 +1,5 @@
+using CPCSharp.Core.PSG;
+
 namespace CPCSharp.Core {
 
     /// <summary>
@@ -33,7 +35,7 @@ namespace CPCSharp.Core {
 
         private IODirection PortADirection => (IODirection)((_ioControlData >> 4) & 0x1);
 
-        private readonly PSG _psg;
+        private readonly AY8912 _psg;
 
         private bool _casIn;
         public bool CassetteIn { get => _casIn; set {
@@ -102,7 +104,7 @@ namespace CPCSharp.Core {
 
         public PPI(CRTC crtc) {
             _crtc = crtc;
-            _psg = new PSG();
+            _psg = new AY8912();
         }
 
         public bool ActiveAtAddress(ushort address)
