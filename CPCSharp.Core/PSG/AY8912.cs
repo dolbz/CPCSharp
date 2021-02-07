@@ -1,6 +1,14 @@
 using System;
-using System.Security.Authentication.ExtendedProtection;
-namespace CPCSharp.Core.PSG {
+
+namespace CPCSharp.Core.PSG
+{
+    internal enum PSGState {
+        Inactive,
+        ReadFromPSG,
+        WriteToPSG,
+        LatchAddress
+    }
+
 
     /// <summary>
     /// Keyboard only implementation atm
@@ -9,8 +17,11 @@ namespace CPCSharp.Core.PSG {
     public class AY8912 {
         private readonly INativePSG _nativePsg;
 
+        private PSGState CurrentState = PSGState.Inactive;
+
         public AY8912() {
             _nativePsg = new NativePSG();
+            _registers[14] = 0xff;
         }
 
         private byte _keyboardLine;
@@ -21,7 +32,7 @@ namespace CPCSharp.Core.PSG {
             set 
             {
                 _keyboardLine = value;
-                CheckForStateChange();
+                //CheckForStateChange();
             }
         
         }
@@ -34,7 +45,6 @@ namespace CPCSharp.Core.PSG {
         public bool BDIR { 
             set {
                 _bdir = value;
-                CheckForStateChange();
             }
          }
 
@@ -43,60 +53,99 @@ namespace CPCSharp.Core.PSG {
         public bool BC1 { 
             set {
                 _bc1 = value;
-                CheckForStateChange();
             }
         }
 
-        private void CheckForStateChange() {
-            if (!_bdir && _bc1) { // Read from PSG 
-                if (_currentRegisterIndex == 14) {
-                    Data = GetKeyboardRowData();
-                } else {
-                    Data = _registers[_currentRegisterIndex];
-                }
-            } else if(_bdir && !_bc1) { // Write to psg
+        public void InputTransitionComplete() {
+            UpdateState();
+        }
 
-                _registers[_currentRegisterIndex] = Data;
-
-                switch (_currentRegisterIndex) {
-                    case 0:
-                    case 1:
-                        UpdateToneNative(PSGChannel.A);
-                        break;
-                    case 2:
-                    case 3:
-                        UpdateToneNative(PSGChannel.B);
-                        break;
-                    case 4:
-                    case 5:
-                        UpdateToneNative(PSGChannel.C);
-                        break;
-                    case 6:
-                        UpdateNoisePeriod();
-                        break;
-                    case 7:
-                        EnableRegisterUpdated();
-                        break;
-                    case 8:
-                        UpdateAmplitude(PSGChannel.A);
-                        break;
-                    case 9:
-                        UpdateAmplitude(PSGChannel.B);
-                        break;
-                    case 10:
-                        UpdateAmplitude(PSGChannel.C);
-                        break;
-                    case 14:
-                        _registers[_currentRegisterIndex] = GetKeyboardRowData();
-                        break;
-                    case 15:
-                        break;
-                    default:
-                        break;
-                }
-            } else if (_bdir && _bc1) { // Latch address
-                _currentRegisterIndex = Data & 0xf;
+        private void UpdateState() {
+            var previousState = CurrentState;
+            
+            if (!_bdir && !_bc1) {
+                Console.WriteLine($"Going to inactive state. Previous state {previousState}");
+                CurrentState = PSGState.Inactive;
+            } else if (!_bdir && _bc1) {
+                CurrentState = PSGState.ReadFromPSG;
+            } else if (_bdir && !_bc1) {
+                CurrentState = PSGState.WriteToPSG;
+            } else {
+                Console.WriteLine($"Latching address state. Previous state {previousState}");
+                CurrentState = PSGState.LatchAddress;
             }
+
+            // Process active state -> NACT transition
+            if (CurrentState == PSGState.Inactive) {
+                switch (previousState) {
+                    case PSGState.LatchAddress:
+                        ProcessLatch();
+                        break;
+                    case PSGState.WriteToPSG:
+                        ProcessWrite();
+                        break;
+                }
+            } else {
+                // For reads output changes following NACT -> DTB transition
+                if (CurrentState == PSGState.ReadFromPSG) {
+                    ProcessRead();
+                }
+            }
+        }
+
+        private void ProcessRead() {
+            if (_currentRegisterIndex == 14) {
+                Data = GetKeyboardRowData();
+            } else {
+                Data = _registers[_currentRegisterIndex];
+           }
+        }
+
+        private void ProcessWrite() {
+            _registers[_currentRegisterIndex] = Data;
+
+            switch (_currentRegisterIndex) {
+                case 0:
+                case 1:
+                    UpdateToneNative(PSGChannel.A);
+                    break;
+                case 2:
+                case 3:
+                    UpdateToneNative(PSGChannel.B);
+                    break;
+                case 4:
+                case 5:
+                    UpdateToneNative(PSGChannel.C);
+                    break;
+                case 6:
+                    UpdateNoisePeriod();
+                    break;
+                case 7:
+                    EnableRegisterUpdated();
+                    break;
+                case 8:
+                    UpdateAmplitude(PSGChannel.A);
+                    break;
+                case 9:
+                    UpdateAmplitude(PSGChannel.B);
+                    break;
+                case 10:
+                    UpdateAmplitude(PSGChannel.C);
+                    break;
+                case 14:
+                    Console.WriteLine("Setting keyboard data");
+                    _registers[_currentRegisterIndex] = GetKeyboardRowData();
+                    break;
+                case 15:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private  void ProcessLatch() {
+            _currentRegisterIndex = Data & 0xf;
+            Console.WriteLine($"Processing latch. New value: {_currentRegisterIndex}");
         }
 
         private void UpdateNoisePeriod() {
@@ -116,6 +165,8 @@ namespace CPCSharp.Core.PSG {
         }
 
         private void EnableRegisterUpdated() {
+            // TODO A/B IO ports
+
             var enableRegisterValue = _registers[7];
 
             bool channelAEnabled = (enableRegisterValue & 0x1) == 0;

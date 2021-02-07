@@ -117,6 +117,7 @@ namespace CPCSharp.Core {
             _psg.BDIR = (output >> 7) == 0x1;
             _psg.BC1 = ((output >> 6) & 0x1) == 0x1;
             TapeMotorOn = ((output >> 4) & 0x1) == 0x1;
+            _psg.InputTransitionComplete();
         }
     }
 }
