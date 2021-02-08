@@ -21,7 +21,6 @@ namespace CPCSharp.Core.PSG
 
         public AY8912() {
             _nativePsg = new NativePSG();
-            _registers[14] = 0xff;
         }
 
         private byte _keyboardLine;
@@ -64,14 +63,12 @@ namespace CPCSharp.Core.PSG
             var previousState = CurrentState;
             
             if (!_bdir && !_bc1) {
-                Console.WriteLine($"Going to inactive state. Previous state {previousState}");
                 CurrentState = PSGState.Inactive;
             } else if (!_bdir && _bc1) {
                 CurrentState = PSGState.ReadFromPSG;
             } else if (_bdir && !_bc1) {
                 CurrentState = PSGState.WriteToPSG;
             } else {
-                Console.WriteLine($"Latching address state. Previous state {previousState}");
                 CurrentState = PSGState.LatchAddress;
             }
 
@@ -133,8 +130,7 @@ namespace CPCSharp.Core.PSG
                     UpdateAmplitude(PSGChannel.C);
                     break;
                 case 14:
-                    Console.WriteLine("Setting keyboard data");
-                    _registers[_currentRegisterIndex] = GetKeyboardRowData();
+                    // TODO only write in output mode
                     break;
                 case 15:
                     break;
@@ -145,7 +141,6 @@ namespace CPCSharp.Core.PSG
 
         private  void ProcessLatch() {
             _currentRegisterIndex = Data & 0xf;
-            Console.WriteLine($"Processing latch. New value: {_currentRegisterIndex}");
         }
 
         private void UpdateNoisePeriod() {

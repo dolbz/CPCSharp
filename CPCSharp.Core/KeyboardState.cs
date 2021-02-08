@@ -55,6 +55,7 @@ namespace CPCSharp.Core {
         public static CPCKey Tab = new CPCKey { line = 8, bitPos = 4 };
         public static CPCKey Control = new CPCKey { line = 2, bitPos = 7 };
         public static CPCKey Enter = new CPCKey { line = 0, bitPos =  6 };
+        public static CPCKey Minus = new CPCKey { line = 3, bitPos = 1 };
 
         public int line { get; private set; }
         public int bitPos { get; private set; }

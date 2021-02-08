@@ -63,6 +63,7 @@ namespace CPCSharp.App.Views
             { Key.Oem4, CPCKey.AtSymbol },
             { Key.OemCloseBrackets, CPCKey.OpenSquareBracket },
             { Key.Tab, CPCKey.Tab },
+            { Key.OemMinus, CPCKey.Minus }
         };
 
         public MainWindow()
