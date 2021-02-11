@@ -144,7 +144,9 @@ namespace CPCSharp.Core.PSG
         }
 
         private void UpdateNoisePeriod() {
-            // TODO
+            var noisePeriod = _registers[6] & 0x1f;
+            var noiseFreq =  1_000_000.0f / (16 * noisePeriod);
+            _nativePsg.SetNoiseFrequency(noiseFreq);
         }
 
         private void UpdateAmplitude(PSGChannel channel) {

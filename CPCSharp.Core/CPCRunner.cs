@@ -48,6 +48,7 @@ namespace CPCSharp.Core
         private bool _breakpointHit;
 
         private Action _renderListener;
+        private uint _systemClockCycles = 0;
         private Stopwatch stopwatch = Stopwatch.StartNew();
         private CycleCountObservation previousObservation = new CycleCountObservation();
         private CycleCountObservation currentObservation = new CycleCountObservation();
@@ -270,6 +271,29 @@ namespace CPCSharp.Core
                 }
                 lock(_cpu.CpuStateLock) {
                     do {
+                        if (_systemClockCycles > currentObservation.Count + 1000) {
+                                // We want to compare over a long period but adjust in much shorter periods
+                                // So this code runs every 1000 cycles but compares against a time period 
+                                // of 50000 cycles
+                                if (_systemClockCycles % 50000 == 0) {
+                                    previousObservation = currentObservation;
+                                }
+                                double calculatedMhzFrequency = 0;
+                                do {
+                                    currentObservation = new CycleCountObservation {
+                                        ElapsedMilliseconds = stopwatch.Elapsed.TotalMilliseconds,
+                                        Count = _systemClockCycles
+                                    };
+
+                                    var timeDelta = currentObservation.ElapsedMilliseconds-previousObservation.ElapsedMilliseconds;
+                                    var cycleCountDelta = currentObservation.Count - previousObservation.Count;
+
+                                    calculatedMhzFrequency = (cycleCountDelta/timeDelta)/1000;
+                                    //Console.WriteLine($"Calculated MHz {calculatedMhzFrequency}");
+                                } while (calculatedMhzFrequency > 16);
+                        }
+                    
+                        _systemClockCycles++;
                         _gateArray.Clock();
 
                         _gateArray.HSYNC = _crtc.HSYNC;
@@ -299,18 +323,10 @@ namespace CPCSharp.Core
                         }
                         
                         if (_gateArray.CpuClock) {
-                            if (_cpu.TotalTCycles > currentObservation.Count + 1000000) {
-                                previousObservation = currentObservation;
-                                currentObservation = new CycleCountObservation {
-                                    ElapsedMilliseconds = stopwatch.Elapsed.TotalMilliseconds,
-                                    Count = _cpu.TotalTCycles
-                                };
-
-                                var timeDelta = currentObservation.ElapsedMilliseconds-previousObservation.ElapsedMilliseconds;
-                                var cycleCountDelta = currentObservation.Count - previousObservation.Count;
-
-                                var calculatedMhzFrequency = (cycleCountDelta/timeDelta)/1000;
+                            if (_ramBreakpoints.Count > 0 && _cpu.NewInstruction && _ramBreakpoints.Contains(_cpu.PC)) {
+                                _breakpointHit = true;
                             }
+
                             _cpu.Clock();
                             if (_ppi.TapeMotorOn) {
                                 _ppi.CassetteIn = _tape.ClockTick();

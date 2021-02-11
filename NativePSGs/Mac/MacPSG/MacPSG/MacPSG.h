@@ -13,14 +13,14 @@
 
 enum channel { ChannelA, ChannelB, ChannelC };
 
-enum envelopeStyle {
+enum envelopeShape {
     FadeDownOnceHoldLow,
     FadeUpOnceHoldLow,
     DescendingSawTooth,
     DescendingTriangle,
     FadeDownOnceHoldHigh,
     AscendingSawTooth,
-    FadeUpHoldHigh,
+    FadeUpOnceHoldHigh,
     AscendingTriangle
 };
 
@@ -31,6 +31,12 @@ void SetChannelAttributesNative(enum channel channel, bool channelEnabled, bool 
 void SetAmplitudeModeNative(enum channel channel, bool isFixedMode);
 
 void SetAmplitudeNative(enum channel channel, float amplitude);
+
+void SetEnvelopeFrequencyNative(float frequency);
+
+void SetEnvelopeShapeNative(enum envelopeShape shape);
+
+void SetNoiseFrequencyNative(float frequency);
 
 @end
 

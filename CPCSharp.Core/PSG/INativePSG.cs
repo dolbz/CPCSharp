@@ -11,5 +11,11 @@ namespace CPCSharp.Core.PSG {
         void SetAmplitude(PSGChannel channel, float amplitude);
 
         void SetChannelAttributes(PSGChannel channel, bool channelEnabled, bool noiseOn);
+
+        void SetNoiseFrequency(float frequency);
+
+        void SetEnvelopeFrequency(float frequency);
+
+        void SetEnvelopeShape(EnvelopeShape envelope);
     }
 }

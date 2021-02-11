@@ -12,49 +12,46 @@
 
 @end
 
-void SetToneNative(enum channel channel, float frequency) {
-    
+ChannelGenerator* GetChannelGeneratorForChannel(enum channel channel) {
     switch (channel) {
         case ChannelA:
-            Synth.shared.frequencyA = frequency;
+            return Synth.shared.channelA;
             break;
         case ChannelB:
-            Synth.shared.frequencyB = frequency;
+            return Synth.shared.channelB;
             break;
         case ChannelC:
-            Synth.shared.frequencyC = frequency;
+            return Synth.shared.channelC;
             break;
     }
+}
+
+void SetToneNative(enum channel channel, float frequency) {
+    GetChannelGeneratorForChannel(channel).frequency = frequency;
 }
 
 void SetChannelAttributesNative(enum channel channel, bool channelEnabled, bool noiseOn) {
-    switch (channel) {
-        case ChannelA:
-            Synth.shared.channelAEnabled = channelEnabled;
-            break;
-        case ChannelB:
-            Synth.shared.channelBEnabled = channelEnabled;
-            break;
-        case ChannelC:
-            Synth.shared.channelCEnabled = channelEnabled;
-            break;
-    }
+    ChannelGenerator* cg = GetChannelGeneratorForChannel(channel);
+    cg.toneEnabled = channelEnabled;
+    cg.noiseEnabled = noiseOn;
 }
 
 void SetAmplitudeModeNative(enum channel channel, bool isFixedMode) {
-    
+    GetChannelGeneratorForChannel(channel).amplitudeFixedMode = isFixedMode;
 }
 
 void SetAmplitudeNative(enum channel channel, float amplitude) {
-    switch (channel) {
-        case ChannelA:
-            Synth.shared.amplitudeA = amplitude;
-            break;
-        case ChannelB:
-            Synth.shared.amplitudeB = amplitude;
-            break;
-        case ChannelC:
-            Synth.shared.amplitudeC = amplitude;
-            break;
-    }
+    GetChannelGeneratorForChannel(channel).amplitude = amplitude;
+}
+
+void SetEnvelopeFrequencyNative(float frequency) {
+    Synth.shared.envelopeFrequency = frequency;
+}
+
+void SetEnvelopeShapeNative(enum envelopeShape shape) {
+    Synth.shared.envelopeShape = shape;
+}
+
+void SetNoiseFrequencyNative(float frequency) {
+    Synth.shared.noiseFrequency = frequency;
 }

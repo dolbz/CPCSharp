@@ -17,25 +17,42 @@ namespace CPCSharp.Core.PSG
         [DllImport("libMacPSG.dylib")]
         public static extern void SetAmplitudeNative(PSGChannel channel, float amplitude);
 
+        [DllImport("libMacPSG.dylib")]
+        public static extern void SetNoiseFrequencyNative(float frequency);
+
+        [DllImport("libMacPSG.dylib")]
+        public static extern void SetEnvelopeFrequencyNative(float frequency);
+
+        [DllImport("libMacPSG.dylib")]
+        public static extern void SetEnvelopeShapeNative(EnvelopeShape envelope);
+
         public void SetTone(PSGChannel channel, float frequency) {
-            Console.WriteLine($"Setting tone for {channel}: {frequency}Hz");
             SetToneNative(channel, frequency);
         }
 
         public void SetAmplitudeMode(PSGChannel channel, bool isFixedMode) {
-            Console.WriteLine($"Setting amplitude mode for {channel}: { (isFixedMode ? "Fixed Mode" : "Envelope Mode") }");
             SetAmplitudeModeNative(channel, isFixedMode);
         }
 
         public void SetAmplitude(PSGChannel channel, float amplitude) {
-            Console.WriteLine($"Setting amplitude for {channel}: {amplitude}");
             SetAmplitudeNative(channel, amplitude);
         }
 
         public void SetChannelAttributes(PSGChannel channel, bool channelEnabled, bool noiseOn)
         {
-            Console.WriteLine($"Setting attributes for {channel}, Enabled: {channelEnabled}, Noise On: {noiseOn}");
             SetChannelAttributesNative(channel, channelEnabled, noiseOn);
+        }
+
+        public void SetNoiseFrequency(float frequency) {
+            SetNoiseFrequencyNative(frequency);
+        }
+
+        public void SetEnvelopeFrequency(float frequency) {
+            SetEnvelopeFrequencyNative(frequency);
+        }
+
+        public void SetEnvelopeShape(EnvelopeShape envelope) {
+            SetEnvelopeShapeNative(envelope);
         }
     }
 }
