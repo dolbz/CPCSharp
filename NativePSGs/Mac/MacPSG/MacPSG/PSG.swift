@@ -355,7 +355,6 @@ class Synth : NSObject {
     // MARK: Init
     
     override init() {
-        NSLog("Initializing swift")
         audioEngine = AVAudioEngine()
         
         let mainMixer = audioEngine.mainMixerNode

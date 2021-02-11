@@ -23,18 +23,6 @@
       <Button Command="{Binding MemoryView}" Width="50" Content="Memory View"/>
     </StackPanel>
     <StackPanel Orientation="Horizontal">
-      <!--<ItemsControl Items="{Binding ProgramListing}">
-          <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate>
-                  <StackPanel Orientation="Vertical"/>
-              </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
-          <ItemsControl.ItemTemplate>
-              <DataTemplate >
-                  <TextBlock Text="{Binding AsmDescription}" />
-              </DataTemplate>
-          </ItemsControl.ItemTemplate>
-      </ItemsControl>-->
       <ListBox Items="{Binding ProgramListing}" Width="300" SelectedIndex="{Binding SelectedRamIndex}" AutoScrollToSelectedItem="True">
         <ListBox.ItemTemplate>
             <DataTemplate>

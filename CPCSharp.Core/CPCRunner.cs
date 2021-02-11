@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.IO;
 using System;
 using Z80;
 using Z80.Instructions;
@@ -10,7 +9,6 @@ using CPCSharp.Core.Interfaces;
 using CDTSharp.Core.Playback;
 using CDTSharp.Core;
 using CPCSharp.Core.Debugging;
-using System.Linq;
 
 namespace CPCSharp.Core
 {
@@ -46,8 +44,6 @@ namespace CPCSharp.Core
         private List<CPCBreakpoint> _breakPoints = new List<CPCBreakpoint>();
         private List<ushort> _ramBreakpoints = new List<ushort>();
         private bool _breakpointHit;
-
-        private Action _renderListener;
         private uint _systemClockCycles = 0;
         private Stopwatch stopwatch = Stopwatch.StartNew();
         private CycleCountObservation previousObservation = new CycleCountObservation();
