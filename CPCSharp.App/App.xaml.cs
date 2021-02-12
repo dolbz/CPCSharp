@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -20,6 +21,16 @@ namespace CPCSharp.App
             AvaloniaXamlLoader.Load(this);
             _runner = new CPCRunner(_renderer);
             _runner.Initialize();
+
+            var args = Environment.GetCommandLineArgs();
+
+            const string TapeArg = "--tape=";
+            foreach (var arg in args) {
+                if (arg.StartsWith(TapeArg)) {
+                    var tapePath = arg.Split('=')[1];
+                    _runner.LoadTape(tapePath);
+                }
+            }
         }
 
         public override void OnFrameworkInitializationCompleted()

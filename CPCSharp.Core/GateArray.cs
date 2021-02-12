@@ -245,11 +245,11 @@ namespace CPCSharp.Core
             var pixel0Bit0 = (_data & 0x80) >> 7;
             var pixel0Value = _penColours[pixel0Bit1 | pixel0Bit0];
 
-            var pixel1Bit1 = (_data & 0x4) >> 3;
+            var pixel1Bit1 = (_data & 0x4) >> 1;
             var pixel1Bit0 = (_data & 0x40) >> 6;
             var pixel1Value = _penColours[pixel1Bit1 | pixel1Bit0];
 
-            var pixel2Bit1 = (_data & 0x2) >> 2;
+            var pixel2Bit1 = (_data & 0x2);
             var pixel2Bit0 = (_data & 0x20) >> 5;
             var pixel2Value = _penColours[pixel2Bit1 | pixel2Bit0];
 

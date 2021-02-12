@@ -53,7 +53,14 @@ namespace CPCSharp.Core
             _gateArray = new GateArray(renderer);
             _crtc = new CRTC(renderer, _gateArray);
             _ppi = new PPI(_crtc);
-            _tape = new PlayableTape(CDTReader.ReadCDTFile("/Users/nrandle/Documents/CPC/games/CDT/Source6 - amstrad.serveftp.com/Pacific (UK) (1986) [Original] [TAPE].cdt"));
+        }
+
+        public void LoadTape(string path) {
+            _tape = new PlayableTape(CDTReader.ReadCDTFile(path));
+        }
+
+        public void RewindTape() {
+            _tape?.Rewind();
         }
 
         public void AddRamBreakpoint(ushort addr) {
@@ -325,7 +332,7 @@ namespace CPCSharp.Core
 
                             _cpu.Clock();
                             if (_ppi.TapeMotorOn) {
-                                _ppi.CassetteIn = _tape.ClockTick();
+                                _ppi.CassetteIn = _tape?.ClockTick() ?? false;
                             }
                             if (_cpu.IORQ && !_cpu.WAIT) {
                                 var ioDevice = GetIoDeviceForAddress(_cpu.Address);
