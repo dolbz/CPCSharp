@@ -5,17 +5,17 @@ using CDTSharp.Core.Blocks;
 namespace CDTSharp.Core.Blocks
 {
     public class TurboLoadingBlock : IBlock {
-        public int PilotPulseLength { get; set; }
-        public int FirstSyncPulseLength { get; set; }
-        public int SecondSyncPulseLength { get; set; }
-        public int LengthOfZeroBitPulse { get; set; }
-        public int LengthOfOneBitPulse { get; set; }
-        public int LengthOfPilotTone { get; set; }
-        public byte UsedBitsInLastByte { get; set; }
-        public int PauseLengthAfterBlock { get; set; }
-        public int LengthOfBlockData { get; set; }
+        public int PilotPulseLength { get; init; }
+        public int FirstSyncPulseLength { get; init; }
+        public int SecondSyncPulseLength { get; init; }
+        public int LengthOfZeroBitPulse { get; init; }
+        public int LengthOfOneBitPulse { get; init; }
+        public int LengthOfPilotTone { get; init; }
+        public byte UsedBitsInLastByte { get; init; }
+        public int PauseLengthAfterBlock { get; init; }
+        public int LengthOfBlockData { get; init; }
 
-        public byte[] Data { get; set; }
+        public byte[] Data { get; init; }
 
         private string BlockType {
             get {
@@ -36,7 +36,8 @@ namespace CDTSharp.Core.Blocks
 
         public string Description {
             get {
-                var desc = "Turbo Loading Block\n" +
+                var desc = 
+                       "Turbo Loading Block\n" +
                        "-------------------\n" +
                        $"PILOT pulse length: {PilotPulseLength}\n" +
                        $"First SYNC pulse length: {FirstSyncPulseLength}\n" +
