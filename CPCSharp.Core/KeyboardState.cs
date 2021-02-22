@@ -56,6 +56,18 @@ namespace CPCSharp.Core {
         public static CPCKey Control = new CPCKey { line = 2, bitPos = 7 };
         public static CPCKey Enter = new CPCKey { line = 0, bitPos =  6 };
         public static CPCKey Minus = new CPCKey { line = 3, bitPos = 1 };
+        public static CPCKey F0 = new CPCKey { line = 1, bitPos = 7 };
+        public static CPCKey F1 = new CPCKey { line = 1, bitPos = 5 };
+        public static CPCKey F2 = new CPCKey { line = 1, bitPos = 6 };
+        public static CPCKey F3 = new CPCKey { line = 0, bitPos = 5 };
+        public static CPCKey F4 = new CPCKey { line = 2, bitPos = 4 };
+        public static CPCKey F5 = new CPCKey { line = 1, bitPos = 4 };
+        public static CPCKey F6 = new CPCKey { line = 0, bitPos = 4 };
+        public static CPCKey F7 = new CPCKey { line = 1, bitPos = 2 };
+        public static CPCKey F8 = new CPCKey { line = 1, bitPos = 3 };
+        public static CPCKey F9 = new CPCKey { line = 0, bitPos = 3 };
+        public static CPCKey FDot = new CPCKey { line = 0, bitPos = 7 };
+        public static CPCKey Escape = new CPCKey { line = 8, bitPos = 2 };
 
         public int line { get; private set; }
         public int bitPos { get; private set; }

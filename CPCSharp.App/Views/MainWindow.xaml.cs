@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using System;
@@ -63,7 +64,18 @@ namespace CPCSharp.App.Views
             { Key.Oem4, CPCKey.AtSymbol },
             { Key.OemCloseBrackets, CPCKey.OpenSquareBracket },
             { Key.Tab, CPCKey.Tab },
-            { Key.OemMinus, CPCKey.Minus }
+            { Key.OemMinus, CPCKey.Minus },
+            { Key.NumPad0, CPCKey.F0 },
+            { Key.NumPad1, CPCKey.F1 },
+            { Key.NumPad2, CPCKey.F2 },
+            { Key.NumPad3, CPCKey.F3 },
+            { Key.NumPad4, CPCKey.F4 },
+            { Key.NumPad5, CPCKey.F5 },
+            { Key.NumPad6, CPCKey.F6 },
+            { Key.NumPad7, CPCKey.F7 },
+            { Key.NumPad8, CPCKey.F8 },
+            { Key.NumPad9, CPCKey.F9 },
+            { Key.Escape, CPCKey.Escape }
         };
 
         public MainWindow()
@@ -80,9 +92,52 @@ namespace CPCSharp.App.Views
 
         void MainWindow_KeyDown(object sender, KeyEventArgs e) {
             Console.WriteLine("Down:" + e.Key.ToString());
-
-            if (e.KeyModifiers.HasFlag(KeyModifiers.Alt) && e.Key == Key.Return) {
-                KeyboardState.Instance.KeyDown(CPCKey.Enter);
+            Console.WriteLine("Key Mod: " + e.KeyModifiers);
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Alt)) {
+                CPCKey key;
+                switch (e.Key) {
+                    case Key.Return:
+                        key = CPCKey.Enter;
+                        break;
+                    case Key.D0:
+                        key = CPCKey.F0;
+                        break;
+                    case Key.D1:
+                        key = CPCKey.F1;
+                        break;
+                    case Key.D2:
+                        key = CPCKey.F2;
+                        break;
+                    case Key.D3:
+                        key = CPCKey.F3;
+                        break;
+                    case Key.D4:
+                        key = CPCKey.F4;
+                        break;
+                    case Key.D5:
+                        key = CPCKey.F5;
+                        break;
+                    case Key.D6:
+                        key = CPCKey.F6;
+                        break;
+                    case Key.D7:
+                        key = CPCKey.F7;
+                        break;
+                    case Key.D8:
+                        key = CPCKey.F8;
+                        break;
+                    case Key.D9:
+                        key = CPCKey.F9;
+                        break;
+                    case Key.OemMinus:
+                        key = CPCKey.FDot;
+                        break;
+                    default:
+                        return;
+                }
+                KeyboardState.Instance.KeyDown(key);
+                // On mac at least there's no keyup event if this modifier is held down so we'll have to manually
+                // make a keyup happen.
                 e.Handled = true;
             }
             if (e.KeyModifiers.HasFlag(KeyModifiers.Control)) {
@@ -96,19 +151,76 @@ namespace CPCSharp.App.Views
             }
             e.Handled = true;
         }
+
+        void ScheduleKeyUp(CPCKey key) {
+            Task.Run(() => {
+                Task.Delay(100).Wait();
+                KeyboardState.Instance.KeyUp(key);
+            });
+        }
+
         void MainWindow_KeyUp(object sender, KeyEventArgs e) {
             Console.WriteLine("Up: " + e.Key.ToString());
-            e.Handled = true;
-            if (e.Key == Key.Return) {
-                KeyboardState.Instance.KeyUp(CPCKey.Enter);
+            Console.WriteLine("Key Mod: " + e.KeyModifiers);
+            
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Alt)) {
+                CPCKey key;
+                switch (e.Key) {
+                    case Key.Return:
+                        key = CPCKey.Enter;
+                        break;
+                    case Key.D0:
+                        key = CPCKey.F0;
+                        break;
+                    case Key.D1:
+                        key = CPCKey.F1;
+                        break;
+                    case Key.D2:
+                        key = CPCKey.F2;
+                        break;
+                    case Key.D3:
+                        key = CPCKey.F3;
+                        break;
+                    case Key.D4:
+                        key = CPCKey.F4;
+                        break;
+                    case Key.D5:
+                        key = CPCKey.F5;
+                        break;
+                    case Key.D6:
+                        key = CPCKey.F6;
+                        break;
+                    case Key.D7:
+                        key = CPCKey.F7;
+                        break;
+                    case Key.D8:
+                        key = CPCKey.F8;
+                        break;
+                    case Key.D9:
+                        key = CPCKey.F9;
+                        break;
+                    case Key.OemMinus:
+                        key = CPCKey.FDot;
+                        break;
+                    default:
+                        return;
+                }
+                KeyboardState.Instance.KeyUp(key);
+                // On mac at least there's no keyup event if this modifier is held down so we'll have to manually
+                // make a keyup happen.
+                e.Handled = true;
+            }
+            if (!e.KeyModifiers.HasFlag(KeyModifiers.Control)) {
+                KeyboardState.Instance.KeyUp(CPCKey.Shift);
             }
             if (!e.KeyModifiers.HasFlag(KeyModifiers.Shift)) {
                 KeyboardState.Instance.KeyUp(CPCKey.Shift);
             }
-            if (KeyMapping.ContainsKey(e.Key)) {
+            if (KeyMapping.ContainsKey(e.Key) && !e.Handled) {
 
                 KeyboardState.Instance.KeyUp(KeyMapping[e.Key]);
             }
+            e.Handled = true;
         }
     }
 }

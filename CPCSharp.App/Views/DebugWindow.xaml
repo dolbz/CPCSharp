@@ -49,7 +49,7 @@
           <TextBlock Text="PC: " /><TextBlock Text="{Binding Snapshot.Cpu.PC, Converter={StaticResource ShortHexValueConverter}}" />
           <TextBlock Text="Frequency: " /><TextBlock Text="{Binding Snapshot.FrequencyMHz }" /><TextBlock Text="MHz" />
         </StackPanel>
-        <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto,Auto"  Margin="4">
+        <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"  Margin="4">
           <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
             <TextBlock Text="A: " /><TextBlock Text="{Binding Snapshot.Cpu.A, Converter={StaticResource ByteHexValueConverter}}" />
           </StackPanel>
@@ -88,6 +88,15 @@
           </StackPanel>
           <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="2">
             <TextBlock Text="HL': " /><TextBlock Text="{Binding Snapshot.Cpu.HL_, Converter={StaticResource ShortHexValueConverter}}" />
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="0">
+            <TextBlock Text="I: " /><TextBlock Text="{Binding Snapshot.Cpu.I, Converter={StaticResource ByteHexValueConverter}}" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="1">
+            <TextBlock Text="R: " /><TextBlock Text="{Binding Snapshot.Cpu.R, Converter={StaticResource ByteHexValueConverter}}" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="2">
           </StackPanel>
         </Grid>
         <StackPanel Orientation="Vertical">
