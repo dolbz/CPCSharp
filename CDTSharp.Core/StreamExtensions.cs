@@ -40,5 +40,13 @@ namespace CDTSharp.Core
 
             return result;
         }
+
+        public static string ReadString(this Stream stream, int length) {
+            var characters = new char[length];
+            for (int i = 0; i < length; i++) {
+                characters[i] = (char)stream.ReadByte();
+            }
+            return new string(characters);
+        }
     }
 }

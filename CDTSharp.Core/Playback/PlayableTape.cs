@@ -17,11 +17,12 @@ namespace CDTSharp.Core.Playback
         /// </summary>
         /// <returns>True for high amplitude, false for low amplitude</returns>
         public bool ClockTick() {
-            if (_currentBlockPlayer == null && _blockIndex < _fileData.Blocks.Length - 1) {
+            while (_currentBlockPlayer == null && _blockIndex < _fileData.Blocks.Length - 1) {
                 // Create a new block player
                 _blockIndex++;
                 var currentBlock = _fileData.Blocks[_blockIndex];
                 _currentBlockPlayer = currentBlock.CreateBlockPlayer(_currentState);
+                
                 System.Console.WriteLine($"Changing block: {currentBlock.Description}");
             }
 
@@ -32,7 +33,7 @@ namespace CDTSharp.Core.Playback
                 }
                 return _currentState;
             }
-            System.Console.WriteLine("Tape finished");
+            //System.Console.WriteLine("Tape finished");
             return false;
         }
 

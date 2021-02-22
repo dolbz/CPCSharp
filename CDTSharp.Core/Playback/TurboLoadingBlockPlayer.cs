@@ -3,11 +3,22 @@ using CDTSharp.Core.Blocks;
 
 namespace CDTSharp.Core.Playback
 {
+    internal enum TurboLoadingBlockPlaybackState {
+        PilotTone,
+        Sync1,
+        Sync2,
+        DataPulse1,
+        DataPulse2,
+        Pause,
+        End
+    }
+
     public class TurboLoadingBlockPlayer : IBlockPlayer {
-        // TODO make use of the last bytes bits used property
         private readonly TurboLoadingBlock _block;
 
+        private TurboLoadingBlockPlaybackState _playbackState = TurboLoadingBlockPlaybackState.PilotTone;
         private int _currentPulseCount;
+        private int _currentDataPulseLength;
         private int _pilotPulsesCompletedCount;
 
         private int _dataIndex;
@@ -15,72 +26,131 @@ namespace CDTSharp.Core.Playback
 
         private bool _currentState;
 
-        private int _currentPulseLength;
-
-        private bool _sync1PulseStarted;
-        private bool _sync2PulseStarted;
-        private bool _dataBitSecondPulseStarted = true;
-
-        private bool _pauseStarted;
-        private bool _lastDataBitStarted;
-
-        private bool _alternatePausePeriodComplete;
-
-        public TurboLoadingBlockPlayer(TurboLoadingBlock block) {
+        public TurboLoadingBlockPlayer(TurboLoadingBlock block, bool initialState) {
             _block = block;
+            _currentState = initialState; // Invert as first clock inverts it because of reasons...
+        }
 
-            if (block.PauseLengthAfterBlock == 0) {
-                _pauseStarted = true;
+        public bool IsComplete => _playbackState == TurboLoadingBlockPlaybackState.End;
+
+        public bool CurrentState => _currentState;
+
+        public bool ClockTick() {
+            _currentPulseCount++;
+
+            var returnState = _currentState;
+
+            switch (_playbackState) {
+                case TurboLoadingBlockPlaybackState.PilotTone:
+                    HandlePilotTone();
+                    break;
+                case TurboLoadingBlockPlaybackState.Sync1:
+                    HandleSync1();
+                    break;
+                case TurboLoadingBlockPlaybackState.Sync2:
+                    HandleSync2();
+                    break;
+                case TurboLoadingBlockPlaybackState.DataPulse1:
+                    HandleDataPulse(nextState: TurboLoadingBlockPlaybackState.DataPulse2);
+                    break;
+                case TurboLoadingBlockPlaybackState.DataPulse2:
+                    HandleDataPulse(nextState: TurboLoadingBlockPlaybackState.DataPulse1);
+                    break;
+                case TurboLoadingBlockPlaybackState.Pause:
+                    HandlePause();
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+            
+            return returnState;
+        }
+        
+        private bool HandlePilotTone() {
+            var returnState = _currentState;
+            if (_currentPulseCount == _block.PilotPulseLength) {
+                _pilotPulsesCompletedCount++;
+                if (_pilotPulsesCompletedCount == _block.LengthOfPilotTone) {
+                    SwitchToState(TurboLoadingBlockPlaybackState.Sync1);
+                } else {
+                    _currentPulseCount = 0;
+                    CreateEdge();
+                }
+            }
+
+            return returnState;
+        }
+
+        private void HandleSync1() {
+            if (_currentPulseCount == _block.FirstSyncPulseLength) {
+                SwitchToState(TurboLoadingBlockPlaybackState.Sync2);
             }
         }
 
-        public bool IsComplete => _lastDataBitStarted && _dataBitSecondPulseStarted && _pauseStarted && _currentPulseCount == _currentPulseLength;
-
-        public bool ClockTick() {
-            if (_currentPulseCount < _currentPulseLength) {
-                _currentPulseCount++;
-                return _currentState;
+        private void HandleSync2() {
+            if (_currentPulseCount == _block.SecondSyncPulseLength) {
+                SwitchToState(TurboLoadingBlockPlaybackState.DataPulse1);
             }
+        }
 
+        private void HandleDataPulse(TurboLoadingBlockPlaybackState nextState) {
+            if (_currentPulseCount == _currentDataPulseLength) {
+                SwitchToState(nextState);
+            }
+        }
+
+        private void HandlePause() {
+            if (_currentPulseCount == 4000) {
+                CreateEdge();
+            }
+            if (_currentPulseCount == 12000 && _currentState) {
+                _currentState = false;
+            }
+            if (_currentPulseCount == _block.PauseLengthAfterBlock) {
+                SwitchToState(TurboLoadingBlockPlaybackState.End, false);
+            }
+        }
+
+        private void SwitchToState(TurboLoadingBlockPlaybackState newState, bool createEdge = true) {
             _currentPulseCount = 0;
-            _currentState = !_currentState;
-
-            if (_pilotPulsesCompletedCount < _block.LengthOfPilotTone) {
-                _pilotPulsesCompletedCount++;
-                _currentPulseLength = _block.PilotPulseLength;
-            } else if (!_sync1PulseStarted) {
-                _sync1PulseStarted = true;
-                _currentPulseLength = _block.FirstSyncPulseLength;
-            } else if (!_sync2PulseStarted) {
-                _sync2PulseStarted = true;
-                _currentPulseLength = _block.SecondSyncPulseLength;
-            } else if (!_dataBitSecondPulseStarted) {
-                _dataBitSecondPulseStarted = true;
-            } else if (!_lastDataBitStarted) {
-                _dataBitSecondPulseStarted = false;
-
-                _currentPulseLength = ((_block.Data[_dataIndex] >> 7-_currentBit++) & 0x1) == 0x1 ? _block.LengthOfOneBitPulse : _block.LengthOfZeroBitPulse;
-                
-                if (_currentBit == 8) {
-                    _currentBit = 0;
-                    _dataIndex++;
-                    if (_dataIndex == _block.Data.Length) {
-                        _lastDataBitStarted = true;
-                    }
-                }
-            } else if (!_pauseStarted) {
-                if (!_alternatePausePeriodComplete) {
-                    _currentPulseLength = 4000; // 4000 cycles = 1ms on
-                    _alternatePausePeriodComplete = true;
-                } else {
-                    _currentPulseLength = _block.PauseLengthAfterBlock-4000;
-                    _pauseStarted = true;
-                    _currentState = false;
-                }
-            } else {
-                throw new Exception("Unexpected fall through");
+            if (createEdge) {
+                CreateEdge();
             }
-            return _currentState;
+            switch (newState) {
+                case TurboLoadingBlockPlaybackState.DataPulse1:
+                    if (!SetupNextDataBit()) {
+                        if (_block.PauseLengthAfterBlock != 0) {
+                            newState = TurboLoadingBlockPlaybackState.Pause;
+                        } else {
+                            newState = TurboLoadingBlockPlaybackState.End;
+                        }
+                    }
+                    break;
+            }
+
+            _playbackState = newState;
+        }
+
+        private bool SetupNextDataBit() {
+            if (_dataIndex >= _block.Data.Length || _dataIndex == _block.Data.Length - 1 && _currentBit == _block.UsedBitsInLastByte) {
+                return false;
+            }
+
+            var currentByte = _block.Data[_dataIndex];
+
+            var currentBitValue = (currentByte >> (7 - _currentBit++)) & 1;
+
+            _currentDataPulseLength = currentBitValue == 1 ? _block.LengthOfOneBitPulse : _block.LengthOfZeroBitPulse;
+
+            if (_currentBit == 8) {
+                _currentBit = 0;
+                _dataIndex++;
+            }
+            return true;
+        }
+
+        private void CreateEdge() {
+            _currentState = !_currentState;
         }
     }
 }

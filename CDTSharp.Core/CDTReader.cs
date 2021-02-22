@@ -11,7 +11,11 @@ namespace CDTSharp.Core
         private static IBlockReader[] blockReaders = new IBlockReader[] {
             new PauseBlockReader(),
             new TurboLoadingBlockReader(),
-            new PureDataBlockReader()
+            new PureDataBlockReader(),
+            new GroupStartBlockReader(),
+            new PureToneBlockReader(),
+            new SequenceOfPulsesBlockReader(),
+            new GroupEndBlockReader()
         };
 
         public static CDTFile ReadCDTFile(string path) {
