@@ -19,8 +19,8 @@ namespace CPCSharp.Core.PSG
 
         private PSGState CurrentState = PSGState.Inactive;
 
-        public AY8912() {
-            _nativePsg = new NativePSG();
+        public AY8912(INativePSG psg) {
+            _nativePsg = psg;
         }
 
         private byte _keyboardLine;

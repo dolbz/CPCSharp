@@ -1,9 +1,8 @@
-using System;
 using System.Runtime.InteropServices;
 
 namespace CPCSharp.Core.PSG
 {
-    public class NativePSG : INativePSG {
+    public class MacPSGInterop : INativePSG {
 
         [DllImport("libMacPSG.dylib")]
         public static extern void SetToneNative(PSGChannel channel, float frequency);

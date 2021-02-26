@@ -102,9 +102,9 @@ namespace CPCSharp.Core {
             }
         }
 
-        public PPI(CRTC crtc) {
+        public PPI(CRTC crtc, INativePSG psg) {
             _crtc = crtc;
-            _psg = new AY8912();
+            _psg = new AY8912(psg);
         }
 
         public bool ActiveAtAddress(ushort address)

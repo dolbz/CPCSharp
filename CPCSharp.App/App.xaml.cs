@@ -1,11 +1,10 @@
 using System;
-using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using CPCSharp.App.Views;
 using CPCSharp.Core;
-using CPCSharp.Core.Interfaces;
+using CPCSharp.Core.PSG;
 using CPCSharp.ViewModels;
 
 namespace CPCSharp.App
@@ -19,7 +18,7 @@ namespace CPCSharp.App
         {
             _renderer = new ScreenRenderer();
             AvaloniaXamlLoader.Load(this);
-            _runner = new CPCRunner(_renderer);
+            _runner = new CPCRunner(_renderer, new MacPSGInterop());
             _runner.Initialize();
 
             var args = Environment.GetCommandLineArgs();
