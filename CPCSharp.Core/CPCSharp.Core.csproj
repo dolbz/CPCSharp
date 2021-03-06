@@ -12,9 +12,9 @@
   <EmbeddedResource Include="BASIC_1.0.ROM" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Z80Sharp\Z80\Z80.csproj" />
+    <ProjectReference Include="..\CDTSharp.Core\CDTSharp.Core.csproj" />
   </ItemGroup>
-    <ItemGroup>
-    <ProjectReference Include="..\..\CDTSharp\CDTSharp.Core\CDTSharp.Core.csproj" />
+  <ItemGroup>
+    <PackageReference Include="Z80Sharp" Version="1.0.0-alpha1" />
   </ItemGroup>
 </Project>
