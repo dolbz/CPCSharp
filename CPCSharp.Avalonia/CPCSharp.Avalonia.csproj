@@ -2,6 +2,17 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
+    <CFBundleName>CPCSharp</CFBundleName>
+    <CFBundleDisplayName>CPC#</CFBundleDisplayName>
+    <CFBundleIdentifier>com.example</CFBundleIdentifier>
+    <CFBundleVersion>1.0.0</CFBundleVersion>
+    <CFBundlePackageType>AAPL</CFBundlePackageType>
+    <CFBundleSignature>????</CFBundleSignature>
+    <CFBundleExecutable>CPCSharp.Avalonia</CFBundleExecutable>
+    <CFBundleIconFile>cpcsharp.icns</CFBundleIconFile> <!-- Will be copied from output directory -->
+    <NSPrincipalClass>NSApplication</NSPrincipalClass>
+    <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
+    <NSHighResolutionCapable>true</NSHighResolutionCapable>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Models\" />
@@ -19,11 +30,15 @@
   <ItemGroup>
     <None Include="..\NativeLibs\libMacPSG.dylib">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="cpcsharp.icns">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>  
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.9.12" />
     <PackageReference Include="Avalonia.Desktop" Version="0.9.12" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.12" />
+    <PackageReference Include="Dotnet.Bundle" Version="*" />
   </ItemGroup>
 </Project>

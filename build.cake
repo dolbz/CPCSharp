@@ -1,4 +1,10 @@
-using System.Runtime;
+using System.Security.AccessControl;
+using System.Runtime.InteropServices;
+using System.IO;
+using System;
+
+const string macIconFile = "CPCSharp.Avalonia/cpcsharp.icns";
+
 var target = Argument("target", "Test");
 var configuration = Argument("configuration", "Release");
 
@@ -15,14 +21,38 @@ Task("Clean")
     });
     CleanDirectory($"./NativeLibs");
     StartProcess("xcodebuild", "-project NativePSGs/Mac/MacPSG/MacPSG.xcodeproj clean");
+    if (FileExists(macIconFile)) {
+        DeleteFile(macIconFile);
+    }
 });
 
-Task("BuildNative")
+Task("BuildNativeMac")
     .Does(() =>
 {
     EnsureDirectoryExists("NativeLibs");
-    StartProcess("xcodebuild", "-project NativePSGs/Mac/MacPSG/MacPSG.xcodeproj build");
-    CopyFile("NativePSGs/Mac/MacPSG/build/Release/libMacPSG.dylib", "NativeLibs/libMacPSG.dylib");
+
+    if (!FileExists("NativeLibs/libMacPSG.dylib"))
+    {
+        var psgBuildResult = StartProcess("xcodebuild", "-project NativePSGs/Mac/MacPSG/MacPSG.xcodeproj build");
+        if (psgBuildResult != 0) {
+            throw new Exception("Error building Mac PSG");
+        }
+        CopyFile("NativePSGs/Mac/MacPSG/build/Release/libMacPSG.dylib", "NativeLibs/libMacPSG.dylib");
+    }
+
+    if (!FileExists("CPCSharp.Avalonia/cpcsharp.icns")) {
+        // Compile all the individual icon pngs into a MacOS icns file
+       var currentWorkingDir = System.IO.Directory.GetCurrentDirectory();
+
+        var generateIconResult = StartProcess("iconutil", new ProcessSettings {
+                Arguments = "-c icns cpcsharp.iconset",
+                WorkingDirectory = System.IO.Path.Combine(currentWorkingDir, "CPCSharp.Avalonia")
+            });
+
+        if (generateIconResult != 0) {
+            throw new Exception("Error generating iconset");
+        }
+    }
 });
 
 Task("Rebuild")
@@ -30,7 +60,7 @@ Task("Rebuild")
     .IsDependentOn("Build");
 
 Task("Build")
-    .IsDependentOn("BuildNative")
+    .IsDependentOn("BuildNativeMac")
     .Does(() =>
 {
     DotNetCoreBuild("CPCSharp.sln", new DotNetCoreBuildSettings
