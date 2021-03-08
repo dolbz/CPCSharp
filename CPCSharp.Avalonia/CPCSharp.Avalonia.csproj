@@ -13,6 +13,7 @@
     <NSPrincipalClass>NSApplication</NSPrincipalClass>
     <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
     <NSHighResolutionCapable>true</NSHighResolutionCapable>
+    <RuntimeIdentifiers>osx-x64</RuntimeIdentifiers>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Models\" />

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Security.AccessControl;
 using System.Runtime.InteropServices;
 using System.IO;
@@ -7,6 +8,8 @@ const string macIconFile = "CPCSharp.Avalonia/cpcsharp.icns";
 
 var target = Argument("target", "Test");
 var configuration = Argument("configuration", "Release");
+
+var currentWorkingDir = System.IO.Directory.GetCurrentDirectory();
 
 //////////////////////////////////////////////////////////////////////
 // TASKS
@@ -42,7 +45,6 @@ Task("BuildNativeMac")
 
     if (!FileExists("CPCSharp.Avalonia/cpcsharp.icns")) {
         // Compile all the individual icon pngs into a MacOS icns file
-       var currentWorkingDir = System.IO.Directory.GetCurrentDirectory();
 
         var generateIconResult = StartProcess("iconutil", new ProcessSettings {
                 Arguments = "-c icns cpcsharp.iconset",
@@ -54,6 +56,20 @@ Task("BuildNativeMac")
         }
     }
 });
+
+Task("PublishMac")
+    .IsDependentOn("Build")
+    .Does(() => {
+        //dotnet msbuild -t:BundleApp -p:RuntimeIdentifier=osx-x64 -p:UseAppHost=true -p:Configuration=Release
+        DotNetCoreMSBuild(new DotNetCoreMSBuildSettings {
+            WorkingDirectory = System.IO.Path.Combine(currentWorkingDir, "CPCSharp.Avalonia"),
+            ArgumentCustomization = args => args
+            .Append("-t:BundleApp")
+            .Append("-p:RuntimeIdentifier=osx-x64")
+            .Append("-p:UseAppHost=true")
+            .Append("-p:Configuration=Release")
+        });
+    });
 
 Task("Rebuild")
     .IsDependentOn("Clean")
