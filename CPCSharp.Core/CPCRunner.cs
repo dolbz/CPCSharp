@@ -114,6 +114,11 @@ namespace CPCSharp.Core
             }
         }
 
+        public void Shutdown()
+        {
+            _cpuRunning = false;
+        }
+
         public void Step()
         {
             lock (_cpu.CpuStateLock)

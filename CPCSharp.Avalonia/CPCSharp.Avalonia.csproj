@@ -28,13 +28,13 @@
   <ItemGroup>
     <ProjectReference Include="..\CPCSharp.Core\CPCSharp.Core.csproj" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(Platform)' == 'MacOS'">
     <None Include="..\NativeLibs\libMacPSG.dylib">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="cpcsharp.icns">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>  
+    </None>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.9.12" />
