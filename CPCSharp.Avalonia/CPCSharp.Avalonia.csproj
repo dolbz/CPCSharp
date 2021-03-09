@@ -9,11 +9,12 @@
     <CFBundlePackageType>AAPL</CFBundlePackageType>
     <CFBundleSignature>????</CFBundleSignature>
     <CFBundleExecutable>CPCSharp.Avalonia</CFBundleExecutable>
-    <CFBundleIconFile>cpcsharp.icns</CFBundleIconFile> <!-- Will be copied from output directory -->
+    <CFBundleIconFile>macicon.icns</CFBundleIconFile> <!-- Will be copied from output directory -->
     <NSPrincipalClass>NSApplication</NSPrincipalClass>
     <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
     <NSHighResolutionCapable>true</NSHighResolutionCapable>
     <RuntimeIdentifiers>osx-x64</RuntimeIdentifiers>
+    <ApplicationIcon>Assets/appicon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Models\" />
@@ -32,7 +33,7 @@
     <None Include="..\NativeLibs\libMacPSG.dylib">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="cpcsharp.icns">
+    <None Include="macicon.icns">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

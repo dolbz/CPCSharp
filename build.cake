@@ -1,10 +1,11 @@
+using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Security.AccessControl;
 using System.Runtime.InteropServices;
 using System.IO;
 using System;
 
-const string macIconFile = "CPCSharp.Avalonia/cpcsharp.icns";
+const string macIconFile = "CPCSharp.Avalonia/macicon.icns";
 
 var target = Argument("target", "Test");
 var configuration = Argument("configuration", "Release");
@@ -43,11 +44,11 @@ Task("BuildNativeMac")
         CopyFile("NativePSGs/Mac/MacPSG/build/Release/libMacPSG.dylib", "NativeLibs/libMacPSG.dylib");
     }
 
-    if (!FileExists("CPCSharp.Avalonia/cpcsharp.icns")) {
+    if (!FileExists(macIconFile)) {
         // Compile all the individual icon pngs into a MacOS icns file
 
         var generateIconResult = StartProcess("iconutil", new ProcessSettings {
-                Arguments = "-c icns cpcsharp.iconset",
+                Arguments = "-c icns macicon.iconset",
                 WorkingDirectory = System.IO.Path.Combine(currentWorkingDir, "CPCSharp.Avalonia")
             });
 
@@ -67,8 +68,23 @@ Task("PublishMac")
             .Append("-t:BundleApp")
             .Append("-p:RuntimeIdentifier=osx-x64")
             .Append("-p:UseAppHost=true")
-            .Append("-p:Configuration=Release")
+            .Append("-p:Configuration=" + configuration)
+            .Append("-p:Platform=MacOS")
         });
+    });
+
+Task("PublishWindows")
+    .IsDependentOn("Build")
+    .Does(() => {
+        DotNetCorePublish("CPCSharp.Avalonia/CPCSharp.Avalonia.csproj", new DotNetCorePublishSettings {
+            IncludeNativeLibrariesForSelfExtract=true,
+            PublishTrimmed=true,
+            SelfContained=true,
+            PublishSingleFile=true,
+            Runtime="win-x64",
+            Configuration = configuration
+        });
+        // dotnet publish -r win-x64 -p:PublishSingleFile=true --self-contained true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=true
     });
 
 Task("Rebuild")
