@@ -29,7 +29,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CPCSharp.Core\CPCSharp.Core.csproj" />
   </ItemGroup>
-  <ItemGroup Condition="'$(Platform)' == 'MacOS'">
+  <ItemGroup Condition="'$(Configuration)' == 'Debug' Or '$(Platform)' == 'MacOS'">
     <None Include="..\NativeLibs\libMacPSG.dylib">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

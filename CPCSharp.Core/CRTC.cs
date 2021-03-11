@@ -114,7 +114,7 @@ namespace CPCSharp.Core {
 
         private Size CalculateDimensions() {
             var width = (_horizontalTotal - _hsyncWidth) * 2 * _gateArray.PixelsPerByte;
-            var height = TotalScanLines;
+            var height = (_verticalTotal * (_maxRasterAddress+1)) - _vsyncWidth;
             if (height <= 0) { // TODO what are the values on CRTC rseet?
                 height = 1;
             }
