@@ -46,7 +46,7 @@ namespace CPCSharp.Core {
 
 
         public int TotalScanLines => (_verticalTotal*(_maxRasterAddress+1)) + _verticalTotalAdjust;
-        public bool InHsyncRegion => _clockCyclesThisLine >= _horizontalSyncPosition && _clockCyclesThisLine < _horizontalSyncPosition + _hsyncWidth;
+        public bool InHsyncRegion => _clockCyclesThisLine >= _horizontalSyncPosition-1 && _clockCyclesThisLine < _horizontalSyncPosition-1 + _hsyncWidth;
         public bool InVsyncRegion => _linesCompleted >= (_verticalSyncPosition * (_maxRasterAddress+1)) && _linesCompleted < (_verticalSyncPosition * (_maxRasterAddress+1)) + _vsyncWidth;
 
         public bool InDispEnRegion => _clockCyclesThisLine >= _horizontalDisplayed || _linesCompleted >= _verticalDisplayed * (_maxRasterAddress+1);
@@ -115,7 +115,7 @@ namespace CPCSharp.Core {
         private Size CalculateDimensions() {
             // x2 as the lowest bit of the video ram address is connected to CCLK. This means the 
             // CRTC isn't clocked for every byte rendered but for every other byte.
-            var width = (_horizontalTotal - _hsyncWidth) * _gateArray.PixelsPerByte * 2;
+            var width = (_horizontalTotal+1 - _hsyncWidth) * _gateArray.PixelsPerByte * 2;
             var height = (_verticalTotal * (_maxRasterAddress+1)) - _vsyncWidth;
             if (height <= 0) { // TODO what are the values on CRTC reset?
                 height = 1;
@@ -136,7 +136,7 @@ namespace CPCSharp.Core {
                 }
             }
 
-            if (_clockCyclesThisLine >= _horizontalTotal) {
+            if (_clockCyclesThisLine > _horizontalTotal) {
                 if (RowAddress == _maxRasterAddress) {
                     RowAddress = 0;
                 } else {
