@@ -113,9 +113,11 @@ namespace CPCSharp.Core {
         }
 
         private Size CalculateDimensions() {
-            var width = (_horizontalTotal - _hsyncWidth) * 2 * _gateArray.PixelsPerByte;
+            // x2 as the lowest bit of the video ram address is connected to CCLK. This means the 
+            // CRTC isn't clocked for every byte rendered but for every other byte.
+            var width = (_horizontalTotal - _hsyncWidth) * _gateArray.PixelsPerByte * 2;
             var height = (_verticalTotal * (_maxRasterAddress+1)) - _vsyncWidth;
-            if (height <= 0) { // TODO what are the values on CRTC rseet?
+            if (height <= 0) { // TODO what are the values on CRTC reset?
                 height = 1;
             }
             if (width <= 0) {
