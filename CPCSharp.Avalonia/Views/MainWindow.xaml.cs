@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using CPCSharp.Core;
+using CPCSharp.ViewModels;
 
 namespace CPCSharp.App.Views
 {
@@ -83,11 +84,46 @@ namespace CPCSharp.App.Views
             InitializeComponent();
         }
 
+        private MainWindowViewModel ViewModel => (MainWindowViewModel)DataContext;
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
             this.KeyDown += MainWindow_KeyDown;
             this.KeyUp += MainWindow_KeyUp;
+            var clientSize = this.GetObservable(Window.ClientSizeProperty);
+
+            var lastSize = ClientSize;
+            var ignoreNextChangeEvent = false;
+
+            clientSize.Subscribe(newSize => {
+                if (ViewModel != null)
+                {
+                    if (ignoreNextChangeEvent) {
+                        ignoreNextChangeEvent = false;
+                    } else {
+                        var aspectRatio = (double)ViewModel.Width / (double)ViewModel.Height;
+                        Console.WriteLine($"New size {newSize} last size {lastSize}");
+                        var widthChangeFactor = newSize.Width/lastSize.Width;
+                        var heighChangeFactor = newSize.Height/lastSize.Height;
+
+                        var absWidthFactor = Math.Abs(widthChangeFactor-1);
+                        var absHeightFactor = Math.Abs(heighChangeFactor-1);
+
+                        if (absWidthFactor > absHeightFactor) {
+                            var usedNewSize = new Size(Math.Floor(newSize.Width), Math.Floor(newSize.Width / aspectRatio));
+                            ClientSize = usedNewSize;
+                            ignoreNextChangeEvent = true;
+                            Console.WriteLine($"Width change {usedNewSize}");
+                        } else if (absHeightFactor > absWidthFactor) {
+                            var usedNewSize = new Size(Math.Floor(newSize.Height*aspectRatio), Math.Floor(newSize.Height));
+                            ClientSize = usedNewSize;
+                            ignoreNextChangeEvent = true;
+                            Console.WriteLine($"Height change {usedNewSize}");
+                        }
+                        lastSize = ClientSize;
+                    }
+                }
+            });
         }
 
         void MainWindow_KeyDown(object sender, KeyEventArgs e) {

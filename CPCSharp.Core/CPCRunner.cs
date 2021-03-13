@@ -408,20 +408,18 @@ namespace CPCSharp.Core
 
             if (!_gateArray.CPUADDR)
             {
+                var ra0to2 = (_crtc.RowAddress & 0x7) << 11;
+                var ma12to13 = (_crtc.MemoryAddress & 0x3000) << 2;
+                var ma0to9 = (_crtc.MemoryAddress & 0x3ff) << 1;
+
                 if (_gateArray.CCLK)
                 {
-                    var ra0to2 = (_crtc.RowAddress & 0x7) << 11;
-                    var ma12to13 = (_crtc.MemoryAddress & 0x3000) << 2;
-                    var ma0to9 = (_crtc.MemoryAddress & 0x3ff) << 1;
                     _gateArray.Address = (ushort)(ma0to9 | ma12to13 | ra0to2 | 0x1); // TODO The gate array doens't even have an address
                     _gateArray.Data = _ram[_gateArray.Address];
                     _crtc.Clock();
                 }
                 else
                 {
-                    var ra0to2 = (_crtc.RowAddress & 0x7) << 11;
-                    var ma12to13 = (_crtc.MemoryAddress & 0x3000) << 2;
-                    var ma0to9 = (_crtc.MemoryAddress & 0x3ff) << 1;
                     _gateArray.Address = (ushort)(ma0to9 | ma12to13 | ra0to2); // TODO The gate array doesn't even have an address
                     _gateArray.Data = _ram[_gateArray.Address];
                 }
