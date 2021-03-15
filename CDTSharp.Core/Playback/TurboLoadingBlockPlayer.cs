@@ -38,7 +38,7 @@ namespace CDTSharp.Core.Playback
         public bool ClockTick() {
             _currentPulseCount++;
 
-            var returnState = _currentState;
+            //var returnState = _currentState;
 
             switch (_playbackState) {
                 case TurboLoadingBlockPlaybackState.PilotTone:
@@ -63,7 +63,7 @@ namespace CDTSharp.Core.Playback
                     throw new NotImplementedException();
             }
             
-            return returnState;
+            return _currentState;
         }
         
         private bool HandlePilotTone() {
