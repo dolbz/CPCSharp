@@ -14,6 +14,12 @@ using CPCSharp.Core.PSG;
 
 namespace CPCSharp.Core
 {
+    public enum ThreadRunMode {
+        CycleCounted,
+        Continuous,
+        NoThread
+    }
+
     public struct CycleCountObservation
     {
         public double ElapsedMilliseconds { get; set; }
@@ -42,14 +48,31 @@ namespace CPCSharp.Core
         private PlayableTape _tape;
         private List<IODevice> _ioDevices = new List<IODevice>();
 
-        private AutoResetEvent _cpuBreakingSignal = new AutoResetEvent(false);
         private AutoResetEvent _uiCompleteSignal = new AutoResetEvent(false);
+
+        private AutoResetEvent _waitingForCyclesSignal = new AutoResetEvent(false);
 
         private List<CPCBreakpoint> _breakPoints = new List<CPCBreakpoint>();
         private List<ushort> _ramBreakpoints = new List<ushort>();
         private bool _breakpointHit;
         private uint _systemClockCycles = 0;
         private Stopwatch stopwatch = Stopwatch.StartNew();
+
+        private int _pendingClockCycleCount = 0;
+
+        public void DispatchCycleCountRequest(int clockCyclesRequired)
+        {
+            lock (_cpu.CpuStateLock) {
+                _pendingClockCycleCount += clockCyclesRequired;
+
+                if (_pendingClockCycleCount > 16_000_000) {
+                    _pendingClockCycleCount = 16_000_000; // 1 second of buffer should more than cover deviations
+                }
+
+                _waitingForCyclesSignal.Set();
+            }
+        }
+
         private CycleCountObservation previousObservation = new CycleCountObservation();
         private CycleCountObservation currentObservation = new CycleCountObservation();
 
@@ -100,15 +123,23 @@ namespace CPCSharp.Core
             }
         }
 
-        public void Initialize(bool spawnThread = true)
+        public void Initialize(ThreadRunMode threadStyle = ThreadRunMode.CycleCounted)
         {
             _cpu.Initialize();
             LoadROMs();
             SetupIODevices();
             
-            if (spawnThread)
-            {
-                ThreadStart work = RunCpuContinous;
+            ThreadStart work = null;
+            switch(threadStyle) {
+                case ThreadRunMode.Continuous:
+                    work = RunContinous;
+                    break;
+                case ThreadRunMode.CycleCounted:
+                    work = RunCycleCounted;
+                    break;
+            }
+
+            if (work != null) {
                 Thread thread = new Thread(work);
                 thread.Start();
             }
@@ -325,7 +356,7 @@ namespace CPCSharp.Core
             return (_cpu.instructions[opcode], byteCount);
         }
 
-        public void RunCpuContinous()
+        public void RunContinous()
         {
             _cpuRunning = true;
             while (_cpuRunning)
@@ -339,34 +370,69 @@ namespace CPCSharp.Core
                 {
                     do
                     {
-                        RunCpuCycle();
+                        RunSystemClockCycle();
                     } while (!_cpu.NewInstruction && !_breakpointHit);
 
-                    CPCBreakpoint bpToRemove = null;
-                    foreach (var bp in _breakPoints)
-                    {
-                        if (bp.Hit(GetStateSnapshot()))
-                        {
-                            _breakpointHit = true;
-                            if (bp.SingleHit)
-                            {
-                                bpToRemove = bp;
-                            }
-                            break;
-                        }
-                    }
-
-                    if (bpToRemove != null)
-                    {
-                        _breakPoints.Remove(bpToRemove);
-                    }
+                    CheckBreakpoints();
                 }
             }
             //instructionSignal.Set();
         }
 
+        public void RunCycleCounted() {
+            _cpuRunning = true;
+            while(_cpuRunning) {
+                var willWait = false;
+                lock (_cpu.CpuStateLock) {
+                    // <= 0 as this _can_ be negative
+                    if (_pendingClockCycleCount <= 0) {
+                        willWait = true;
+                    }
+                }
+                if (_breakpointHit)
+                {
+                    //_cpuBreakingSignal.Set();
+                    _uiCompleteSignal.WaitOne(); // Wait until the UI has signalled CPU execution can continue
+                }
+                if (willWait) {
+                    _waitingForCyclesSignal.WaitOne();
+                }
+
+                lock (_cpu.CpuStateLock) {
+                    do
+                    {
+                        RunSystemClockCycle();
+                        CheckBreakpoints();
+                        _pendingClockCycleCount--; // This can go negative as we wait for a new instruction before ending the cycle
+                    } while (!_cpu.NewInstruction && !_breakpointHit);
+                }
+            }
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void RunCpuCycle()
+        public void CheckBreakpoints() {
+            CPCBreakpoint bpToRemove = null;
+            foreach (var bp in _breakPoints)
+            {
+                if (bp.Hit(GetStateSnapshot()))
+                {
+                    _breakpointHit = true;
+                    if (bp.SingleHit)
+                    {
+                        bpToRemove = bp;
+                    }
+                    break;
+                }
+            }
+
+            if (bpToRemove != null)
+            {
+                _breakPoints.Remove(bpToRemove);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void RunSystemClockCycle()
         {
             if (_systemClockCycles > currentObservation.Count + 1000)
             {
@@ -378,20 +444,16 @@ namespace CPCSharp.Core
                     previousObservation = currentObservation;
                 }
                 double calculatedMhzFrequency = 0;
-                do
+                currentObservation = new CycleCountObservation
                 {
-                    currentObservation = new CycleCountObservation
-                    {
-                        ElapsedMilliseconds = stopwatch.Elapsed.TotalMilliseconds,
-                        Count = _systemClockCycles
-                    };
+                    ElapsedMilliseconds = stopwatch.Elapsed.TotalMilliseconds,
+                    Count = _systemClockCycles
+                };
 
-                    var timeDelta = currentObservation.ElapsedMilliseconds - previousObservation.ElapsedMilliseconds;
-                    var cycleCountDelta = currentObservation.Count - previousObservation.Count;
+                var timeDelta = currentObservation.ElapsedMilliseconds - previousObservation.ElapsedMilliseconds;
+                var cycleCountDelta = currentObservation.Count - previousObservation.Count;
 
-                    calculatedMhzFrequency = (cycleCountDelta / timeDelta) / 1000;
-                    //Console.WriteLine($"Calculated MHz {calculatedMhzFrequency}");
-                } while (calculatedMhzFrequency > 16);
+                calculatedMhzFrequency = (cycleCountDelta / timeDelta) / 1000;
             }
 
             _systemClockCycles++;

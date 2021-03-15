@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using CPCSharp.App.Views;
 using CPCSharp.Core;
 using CPCSharp.Core.PSG;
@@ -28,8 +29,12 @@ namespace CPCSharp.App
             }
             _renderer = new ScreenRenderer();
             AvaloniaXamlLoader.Load(this);
+            
             _runner = new CPCRunner(_renderer, psg);
-            _runner.Initialize();
+            _runner.Initialize(ThreadRunMode.CycleCounted);
+
+            var renderLoop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+            renderLoop.Add(new CPCRenderLoopTask(_runner));
             
             var args = Environment.GetCommandLineArgs();
 

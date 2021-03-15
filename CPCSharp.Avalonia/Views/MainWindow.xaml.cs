@@ -13,6 +13,7 @@ namespace CPCSharp.App.Views
 {
     public class MainWindow : Window
     {
+        const double AspectRatio = 4.0 / 3.0;
         private Dictionary<Key, CPCKey> KeyMapping = new Dictionary<Key, CPCKey> {
             { Key.A, CPCKey.A },
             { Key.B, CPCKey.B },
@@ -101,8 +102,6 @@ namespace CPCSharp.App.Views
                     if (ignoreNextChangeEvent) {
                         ignoreNextChangeEvent = false;
                     } else {
-                        var aspectRatio = (double)ViewModel.Width / (double)ViewModel.Height;
-                        Console.WriteLine($"New size {newSize} last size {lastSize}");
                         var widthChangeFactor = newSize.Width/lastSize.Width;
                         var heighChangeFactor = newSize.Height/lastSize.Height;
 
@@ -110,15 +109,14 @@ namespace CPCSharp.App.Views
                         var absHeightFactor = Math.Abs(heighChangeFactor-1);
 
                         if (absWidthFactor > absHeightFactor) {
-                            var usedNewSize = new Size(Math.Floor(newSize.Width), Math.Floor(newSize.Width / aspectRatio));
+                            var usedNewSize = new Size(Math.Floor(newSize.Width), Math.Floor(newSize.Width / AspectRatio));
                             ClientSize = usedNewSize;
                             ignoreNextChangeEvent = true;
                             Console.WriteLine($"Width change {usedNewSize}");
                         } else if (absHeightFactor > absWidthFactor) {
-                            var usedNewSize = new Size(Math.Floor(newSize.Height*aspectRatio), Math.Floor(newSize.Height));
+                            var usedNewSize = new Size(Math.Floor(newSize.Height*AspectRatio), Math.Floor(newSize.Height));
                             ClientSize = usedNewSize;
                             ignoreNextChangeEvent = true;
-                            Console.WriteLine($"Height change {usedNewSize}");
                         }
                         lastSize = ClientSize;
                     }
