@@ -110,15 +110,15 @@ namespace CPCSharp.App.Views
 
                         if (absWidthFactor > absHeightFactor) {
                             var usedNewSize = new Size(Math.Floor(newSize.Width), Math.Floor(newSize.Width / AspectRatio));
-                            ClientSize = usedNewSize;
                             ignoreNextChangeEvent = true;
-                            Console.WriteLine($"Width change {usedNewSize}");
+                            lastSize = ClientSize;
+                            ClientSize = usedNewSize;
                         } else if (absHeightFactor > absWidthFactor) {
                             var usedNewSize = new Size(Math.Floor(newSize.Height*AspectRatio), Math.Floor(newSize.Height));
-                            ClientSize = usedNewSize;
                             ignoreNextChangeEvent = true;
+                            lastSize = ClientSize;
+                            ClientSize = usedNewSize;
                         }
-                        lastSize = ClientSize;
                     }
                 }
             });
