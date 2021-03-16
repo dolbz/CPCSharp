@@ -97,31 +97,38 @@ namespace CPCSharp.App.Views
             var ignoreNextChangeEvent = false;
 
             clientSize.Subscribe(newSize => {
-                if (ViewModel != null)
-                {
-                    if (ignoreNextChangeEvent) {
-                        ignoreNextChangeEvent = false;
-                    } else {
-                        var widthChangeFactor = newSize.Width/lastSize.Width;
-                        var heighChangeFactor = newSize.Height/lastSize.Height;
+                if (ignoreNextChangeEvent) {
+                    ignoreNextChangeEvent = false;
+                } else {
+                    var widthChangeFactor = newSize.Width/lastSize.Width;
+                    var heighChangeFactor = newSize.Height/lastSize.Height;
 
-                        var absWidthFactor = Math.Abs(widthChangeFactor-1);
-                        var absHeightFactor = Math.Abs(heighChangeFactor-1);
+                    var absWidthFactor = Math.Abs(widthChangeFactor-1);
+                    var absHeightFactor = Math.Abs(heighChangeFactor-1);
 
-                        if (absWidthFactor > absHeightFactor) {
-                            var usedNewSize = new Size(Math.Floor(newSize.Width), Math.Floor(newSize.Width / AspectRatio));
-                            ignoreNextChangeEvent = true;
-                            lastSize = ClientSize;
-                            ClientSize = usedNewSize;
-                        } else if (absHeightFactor > absWidthFactor) {
-                            var usedNewSize = new Size(Math.Floor(newSize.Height*AspectRatio), Math.Floor(newSize.Height));
-                            ignoreNextChangeEvent = true;
-                            lastSize = ClientSize;
-                            ClientSize = usedNewSize;
-                        }
+                    if (absWidthFactor > absHeightFactor) {
+                        var usedNewSize = new Size(Math.Floor(newSize.Width), Math.Floor(newSize.Width / AspectRatio));
+                        ignoreNextChangeEvent = true;
+                        lastSize = ClientSize;
+                        ClientSize = usedNewSize;
+                    } else if (absHeightFactor > absWidthFactor) {
+                        var usedNewSize = new Size(Math.Floor(newSize.Height*AspectRatio), Math.Floor(newSize.Height));
+                        ignoreNextChangeEvent = true;
+                        lastSize = ClientSize;
+                        ClientSize = usedNewSize;
                     }
                 }
             });
+        }
+
+        protected override void OnDataContextChanged(EventArgs e)
+        {
+            base.OnDataContextChanged(e);
+            ViewModel.Window = this;
+        }
+
+        public void LoadTape() {
+            Console.WriteLine("Loading tape!");
         }
 
         void MainWindow_KeyDown(object sender, KeyEventArgs e) {

@@ -18,6 +18,8 @@ namespace CPCSharp.App
 
         public override void Initialize()
         {
+            Name = "CPC#";
+
             var os = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().OperatingSystem;
 
             INativePSG psg = new DefaultPSG();

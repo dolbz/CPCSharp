@@ -2,6 +2,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:CPCSharp"
              x:Class="CPCSharp.App.App">
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="Preferences..." Command="{Binding OpenPreferences}">
+            </NativeMenuItem>
+        </NativeMenu>
+    </NativeMenu.Menu>
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>

@@ -1,7 +1,10 @@
-﻿using Avalonia.Media.Imaging;
+﻿using System;
+using Avalonia.Media.Imaging;
 using CPCSharp.Core;
 using ReactiveUI;
 using CPCSharp.App;
+using Avalonia.Controls;
+using System.Collections.Generic;
 
 namespace CPCSharp.ViewModels
 {
@@ -9,6 +12,8 @@ namespace CPCSharp.ViewModels
     {
         private readonly CPCRunner _runner;
         private readonly ScreenRenderer _renderer;
+
+        public Window Window { get; set; }
 
         private Bitmap _screenBitmap; 
         public Bitmap ScreenBitmap
@@ -35,6 +40,23 @@ namespace CPCSharp.ViewModels
             _runner = runner;
             _renderer = screenRenderer;
             screenRenderer.RegisterScreenCompleteCallback(OnUpdate);
+        }
+
+        public async void LoadTape() {
+            var openDialog = new OpenFileDialog()
+            {
+                Title = "Open file",
+                Filters = new List<FileDialogFilter> {
+                    new FileDialogFilter { Name = "CDT Files", Extensions = new List<string> { "cdt" } }
+                }
+            };
+                
+            var chosenFile = await openDialog.ShowAsync(Window);
+            
+            if (chosenFile.Length > 0) {
+                Console.WriteLine($"Chose file {chosenFile[0]}");
+                _runner.LoadTape(chosenFile[0]);
+            }
         }
 
         private void OnUpdate()
