@@ -38,10 +38,11 @@ namespace CPCSharp.App
             
             var args = Environment.GetCommandLineArgs();
 
-            const string TapeArg = "--tape=";
-            foreach (var arg in args) {
-                if (arg.StartsWith(TapeArg)) {
-                    var tapePath = arg.Split('=')[1];
+            const string TapeArg = "--tape";
+
+            for (int i = 0; i < args.Length; i++) {
+                if (args[i] == TapeArg) {
+                    var tapePath = args[++i];
                     _runner.LoadTape(tapePath);
                 }
             }
