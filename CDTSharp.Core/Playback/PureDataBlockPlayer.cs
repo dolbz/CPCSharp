@@ -36,8 +36,6 @@ namespace CDTSharp.Core.Playback
         public bool ClockTick() {
             _currentPulseCount++;
 
-            var returnState = _currentState;
-
             switch (_playbackState) {
                 case PureDataBlockPlaybackState.DataPulse1:
                     HandleDataPulse(nextState: PureDataBlockPlaybackState.DataPulse2);
@@ -52,7 +50,7 @@ namespace CDTSharp.Core.Playback
                     throw new NotImplementedException();
             }
             
-            return returnState;
+            return _currentState;
         }
 
         private void HandleDataPulse(PureDataBlockPlaybackState nextState) {

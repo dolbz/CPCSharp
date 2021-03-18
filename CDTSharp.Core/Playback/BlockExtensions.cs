@@ -16,6 +16,8 @@ namespace CDTSharp.Core.Playback
                     return new PureToneBlockPlayer(ptb, initialState);
                 case SequenceOfPulsesBlock seq:
                     return new SequenceOfPulsesBlockPlayer(seq, initialState);
+                case StandardSpeedBlock stb:
+                    return new StandardSpeedBlockPlayer(stb, initialState);
                 case GroupStartBlock:
                 case GroupEndBlock:
                     // Cases that return null are non-playable blocks.

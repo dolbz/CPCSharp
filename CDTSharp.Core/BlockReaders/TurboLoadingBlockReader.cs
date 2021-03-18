@@ -1,5 +1,4 @@
 using System.IO;
-using CDTSharp.Core.BlockReaders;
 using CDTSharp.Core.Blocks;
 
 namespace CDTSharp.Core.BlockReaders

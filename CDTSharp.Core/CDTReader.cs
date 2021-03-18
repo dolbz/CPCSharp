@@ -15,7 +15,8 @@ namespace CDTSharp.Core
             new GroupStartBlockReader(),
             new PureToneBlockReader(),
             new SequenceOfPulsesBlockReader(),
-            new GroupEndBlockReader()
+            new GroupEndBlockReader(),
+            new StandardSpeedBlockReader()
         };
 
         public static CDTFile ReadCDTFile(string path) {
