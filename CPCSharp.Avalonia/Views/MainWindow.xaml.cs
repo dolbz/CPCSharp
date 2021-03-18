@@ -8,6 +8,7 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using CPCSharp.Core;
 using CPCSharp.ViewModels;
+using System.Runtime.InteropServices;
 
 namespace CPCSharp.App.Views
 {
@@ -80,6 +81,10 @@ namespace CPCSharp.App.Views
             { Key.Escape, CPCKey.Escape }
         };
 
+        public static KeyGesture OpenTapeGesture => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+            new KeyGesture(Key.O, KeyModifiers.Meta) :
+            new KeyGesture(Key.O, KeyModifiers.Control);
+
         public MainWindow()
         {
             InitializeComponent();
@@ -126,9 +131,15 @@ namespace CPCSharp.App.Views
             base.OnDataContextChanged(e);
             ViewModel.Window = this;
         }
+        
+        public void OpenDebuggerClicked(object sender, EventArgs args)
+        {
+            var runner = ((App)App.Current).Runner;
 
-        public void LoadTape() {
-            Console.WriteLine("Loading tape!");
+            var debugWindow = new DebugWindow {
+                DataContext = new DebugWindowViewModel(runner)
+            };
+            debugWindow.Show();
         }
 
         void MainWindow_KeyDown(object sender, KeyEventArgs e) {

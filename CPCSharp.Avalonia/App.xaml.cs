@@ -13,7 +13,7 @@ namespace CPCSharp.App
 {
     public class App : Application
     {
-        private CPCRunner _runner;
+        public CPCRunner Runner { get; private set; }
         private ScreenRenderer _renderer;
 
         public override void Initialize()
@@ -32,11 +32,11 @@ namespace CPCSharp.App
             _renderer = new ScreenRenderer();
             AvaloniaXamlLoader.Load(this);
             
-            _runner = new CPCRunner(_renderer, psg);
-            _runner.Initialize(ThreadRunMode.CycleCounted);
+            Runner = new CPCRunner(_renderer, psg);
+            Runner.Initialize(ThreadRunMode.CycleCounted);
 
             var renderLoop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            renderLoop.Add(new CPCRenderLoopTask(_runner));
+            renderLoop.Add(new CPCRenderLoopTask(Runner));
             
             var args = Environment.GetCommandLineArgs();
 
@@ -45,7 +45,7 @@ namespace CPCSharp.App
             for (int i = 0; i < args.Length; i++) {
                 if (args[i] == TapeArg) {
                     var tapePath = args[++i];
-                    _runner.LoadTape(tapePath);
+                    Runner.LoadTape(tapePath);
                 }
             }
 
@@ -57,22 +57,17 @@ namespace CPCSharp.App
 
         private void OnExit(object sender, ControlledApplicationLifetimeExitEventArgs e)
         {
-            _runner.Shutdown();
+            Runner.Shutdown();
         }
 
         public override void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-
                 desktop.MainWindow = new MainWindow
                 {
-                    DataContext = new MainWindowViewModel(_runner, _renderer),
+                    DataContext = new MainWindowViewModel(Runner, _renderer),
                 };
-                var debugWindow = new DebugWindow() {
-                    DataContext = new DebugWindowViewModel(_runner)
-                };
-                debugWindow.Show();
             }
 
             base.OnFrameworkInitializationCompleted();

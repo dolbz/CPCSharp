@@ -23,7 +23,7 @@ namespace CPCSharp.Core
     public struct CycleCountObservation
     {
         public double ElapsedMilliseconds { get; set; }
-        public long Count { get; set; }
+        public uint Count { get; set; }
     }
 
     public class CPCRunner
