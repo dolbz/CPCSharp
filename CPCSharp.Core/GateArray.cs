@@ -190,6 +190,14 @@ namespace CPCSharp.Core
             }
         }
 
+        internal void Reset()
+        {
+            _clockTicks = 0;
+            LowerROMEnabled = true;
+            UpperROMEnabled = true;
+            _penColours = new int[16];
+        }
+
         private void SendPixels() {
             // Sends a batch of pixels to a renderer. Amount varies by screen mode
             // This is unlike the real hardware where the video output will change on each clock tick

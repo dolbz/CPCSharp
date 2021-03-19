@@ -27,7 +27,7 @@
                 <NativeMenu>
                     <NativeMenuItem Header="Debugger..." Clicked="OpenDebuggerClicked" />
                     <NativeMenuItemSeperator />
-                    <NativeMenuItem Header="Reset" />
+                    <NativeMenuItem Header="Reset" Command="{Binding Reset}" />
                 </NativeMenu>
                 </NativeMenuItem.Menu>
             </NativeMenuItem>

@@ -59,6 +59,11 @@ namespace CPCSharp.ViewModels
             }
         }
 
+        public void Reset() 
+        {
+            _runner.Reset();
+        }
+
         private void OnUpdate()
         {
             ScreenBitmap = _renderer.ScreenBuffer;
