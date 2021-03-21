@@ -190,6 +190,7 @@ namespace CPCSharp.Core
             {
                 _breakpointHit = false;
                 _cpu.Reset();
+                _gateArray.Reset();
                 _ram = new byte[64 * 1024];
             }
             _uiCompleteSignal.Set();

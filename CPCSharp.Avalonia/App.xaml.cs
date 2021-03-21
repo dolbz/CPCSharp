@@ -55,6 +55,14 @@ namespace CPCSharp.App
             }
         }
 
+        public void OpenAbout(object sender, EventArgs args)
+        {
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
+                var dialog = new AboutDialog();
+                dialog.ShowDialog(desktop.MainWindow);
+            }
+        }
+
         private void OnExit(object sender, ControlledApplicationLifetimeExitEventArgs e)
         {
             Runner.Shutdown();

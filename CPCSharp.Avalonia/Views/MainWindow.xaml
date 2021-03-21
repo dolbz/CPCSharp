@@ -14,21 +14,21 @@
         <NativeMenu>
             <NativeMenuItem Header="File">
                 <NativeMenuItem.Menu>
-                <NativeMenu>
-                    <NativeMenuItem 
-                        Header="Load Tape..." 
-                        Command="{Binding LoadTape}"
-                        Gesture="{x:Static page:MainWindow.OpenTapeGesture}" />
-                </NativeMenu>
+                    <NativeMenu>
+                        <NativeMenuItem 
+                            Header="Load Tape..." 
+                            Command="{Binding LoadTape}"
+                            Gesture="{x:Static page:MainWindow.OpenTapeGesture}" />
+                    </NativeMenu>
                 </NativeMenuItem.Menu>
             </NativeMenuItem>
             <NativeMenuItem Header="System">
                 <NativeMenuItem.Menu>
-                <NativeMenu>
-                    <NativeMenuItem Header="Debugger..." Clicked="OpenDebuggerClicked" />
-                    <NativeMenuItemSeperator />
-                    <NativeMenuItem Header="Reset" Command="{Binding Reset}" />
-                </NativeMenu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Debugger..." Clicked="OpenDebuggerClicked" />
+                        <NativeMenuItemSeperator />
+                        <NativeMenuItem Header="Reset" Command="{Binding Reset}" />
+                    </NativeMenu>
                 </NativeMenuItem.Menu>
             </NativeMenuItem>
         </NativeMenu>

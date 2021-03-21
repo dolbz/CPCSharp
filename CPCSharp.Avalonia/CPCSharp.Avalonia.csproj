@@ -15,6 +15,7 @@
     <NSHighResolutionCapable>true</NSHighResolutionCapable>
     <RuntimeIdentifiers>osx-x64</RuntimeIdentifiers>
     <ApplicationIcon>Assets/appicon.ico</ApplicationIcon>
+    <Version>1.0.0-beta1</Version>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Models\" />

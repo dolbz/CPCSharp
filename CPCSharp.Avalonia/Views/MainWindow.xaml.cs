@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using System;
 using Avalonia;
@@ -88,6 +87,25 @@ namespace CPCSharp.App.Views
         public MainWindow()
         {
             InitializeComponent();
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var menu = NativeMenu.GetMenu(this);
+                var helpMenu = new NativeMenuItem("Help");
+                helpMenu.Menu = new NativeMenu();
+
+                var aboutCpcSharpItem = new NativeMenuItem("About CPC#");
+                aboutCpcSharpItem.Clicked += OpenAbout;
+
+                helpMenu.Menu.Add(aboutCpcSharpItem);
+                menu.Add(helpMenu);
+            }
+        }
+
+        public void OpenAbout(object sender, EventArgs args)
+        {
+            var dialog = new AboutDialog();
+            dialog.ShowDialog(this);
         }
 
         private MainWindowViewModel ViewModel => (MainWindowViewModel)DataContext;
@@ -131,7 +149,7 @@ namespace CPCSharp.App.Views
             base.OnDataContextChanged(e);
             ViewModel.Window = this;
         }
-        
+
         public void OpenDebuggerClicked(object sender, EventArgs args)
         {
             var runner = ((App)App.Current).Runner;

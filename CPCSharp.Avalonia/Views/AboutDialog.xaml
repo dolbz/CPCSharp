@@ -1,0 +1,35 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        MaxWidth="400"
+        MaxHeight="400"
+        MinWidth="400"
+        MinHeight="400"
+        Title="About CPC#"
+        x:Class="CPCSharp.App.Views.AboutDialog">
+  <Window.Styles>
+    <Style Selector="Button.Hyperlink">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Margin" Value="-5"/>
+      <Setter Property="Foreground" Value="#419df2" />
+      <Setter Property="Command" Value="{Binding OpenBrowser}" />
+      <Setter Property="Content" Value="{Binding $self.CommandParameter}" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+  </Window.Styles>
+  <Grid Background="#dddddd">
+    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top" Width="400">
+        <Image Source="/Assets/icon_512.png" Width="200" HorizontalAlignment="Center" />
+        <TextBlock Text="{Binding Version, StringFormat=CPC# - {0}}" FontSize="20" HorizontalAlignment="Center" />
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20" Margin="10 30 10 0">
+            <TextBlock Text="A new CPC 464 emulator in 2021?" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" />
+            <Button Classes="Hyperlink" CommandParameter="https://www.cpcsharp.com"  />
+            <Button Width="100" Command="{Binding LegalBits}">Legal bits</Button>
+        </StackPanel> 
+    </StackPanel>
+    <StackPanel VerticalAlignment="Bottom" Margin="10" Width="400">
+      <TextBlock Text="© 2021 Nathan Randle" TextWrapping="Wrap" HorizontalAlignment="Center" />
+    </StackPanel>
+  </Grid>
+</Window>
