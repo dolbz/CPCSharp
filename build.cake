@@ -30,7 +30,13 @@ Task("Clean")
     }
 });
 
+// Used to invoke the appropriate native build. Add others as native components are created
+// Each native task determines internally whether it needs to do anything for the current platform
+Task("BuildNative")
+    .IsDependentOn("BuildNativeMac");
+
 Task("BuildNativeMac")
+    .WithCriteria(IsRunningOnMacOs())
     .Does(() =>
 {
     EnsureDirectoryExists("NativeLibs");
@@ -92,7 +98,7 @@ Task("Rebuild")
     .IsDependentOn("Build");
 
 Task("Build")
-    .IsDependentOn("BuildNativeMac")
+    .IsDependentOn("BuildNative")
     .Does(() =>
 {
     DotNetCoreBuild("CPCSharp.sln", new DotNetCoreBuildSettings
