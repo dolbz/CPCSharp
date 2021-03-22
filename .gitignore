@@ -4,6 +4,8 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 NativeLibs/*
+BuildArtifacts/*
+NativePSGs/Mac/MacPSG/build/*
 
 # User-specific files
 *.rsuser

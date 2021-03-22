@@ -6,6 +6,7 @@ using System.IO;
 using System;
 
 const string macIconFile = "CPCSharp.Avalonia/macicon.icns";
+const string BuildArtifactsPath = "BuildArtifacts";
 
 var target = Argument("target", "Test");
 var configuration = Argument("configuration", "Release");
@@ -43,7 +44,7 @@ Task("BuildNativeMac")
 
     if (!FileExists("NativeLibs/libMacPSG.dylib"))
     {
-        var psgBuildResult = StartProcess("xcodebuild", "-project NativePSGs/Mac/MacPSG/MacPSG.xcodeproj build");
+        var psgBuildResult = StartProcess("xcodebuild", "-project NativePSGs/Mac/MacPSG/MacPSG.xcodeproj build -configuration Release CODE_SIGN_IDENTITY=\"Developer ID Application: Nathan Randle (AJ9VCT4GE7)\"");
         if (psgBuildResult != 0) {
             throw new Exception("Error building Mac PSG");
         }
@@ -64,7 +65,7 @@ Task("BuildNativeMac")
     }
 });
 
-Task("PublishMac")
+Task("BundleMac")
     .IsDependentOn("Build")
     .Does(() => {
         //dotnet msbuild -t:BundleApp -p:RuntimeIdentifier=osx-x64 -p:UseAppHost=true -p:Configuration=Release
@@ -77,7 +78,18 @@ Task("PublishMac")
             .Append("-p:Configuration=" + configuration)
             .Append("-p:Platform=MacOS")
         });
+        EnsureDirectoryExists(BuildArtifactsPath);
+        CopyDirectory("CPCSharp.Avalonia/bin/MacOS/Release/net5.0/osx-x64/publish/CPC#.app", BuildArtifactsPath + "/CPC#.app");
     });
+
+Task("SignMac")
+    .Does(() => {
+        StartProcess("scripts/MacDistribution/signApp.sh", BuildArtifactsPath + "/CPC#.app");
+    });
+
+Task("PublishMac")
+    .IsDependentOn("BundleMac")
+    .IsDependentOn("SignMac");
 
 Task("PublishWindows")
     .IsDependentOn("Build")

@@ -4,7 +4,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <CFBundleName>CPCSharp</CFBundleName>
     <CFBundleDisplayName>CPC#</CFBundleDisplayName>
-    <CFBundleIdentifier>com.example</CFBundleIdentifier>
+    <CFBundleIdentifier>com.dolbz.CPCSharp</CFBundleIdentifier>
     <CFBundleVersion>1.0.0</CFBundleVersion>
     <CFBundlePackageType>AAPL</CFBundlePackageType>
     <CFBundleSignature>????</CFBundleSignature>
