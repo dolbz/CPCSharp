@@ -5,27 +5,25 @@
   <PropertyGroup Condition="$(DefineConstants.Contains(WINDOWS))">
     <TargetFramework>net5.0-windows</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition="!$(DefineConstants.Contains(WINDOWS))">
+  <PropertyGroup Condition="$(DefineConstants.Contains(MACOS))">
     <TargetFramework>net5.0</TargetFramework>
+    <RuntimeIdentifiers>osx-x64</RuntimeIdentifiers>
+    <CFBundleName>CPCSharp</CFBundleName>
+    <CFBundleDisplayName>CPC#</CFBundleDisplayName>
+    <CFBundleIdentifier>com.dolbz.CPCSharp</CFBundleIdentifier>
+    <CFBundleVersion>1.0.0</CFBundleVersion>
+    <CFBundlePackageType>AAPL</CFBundlePackageType>
+    <CFBundleSignature>????</CFBundleSignature>
+    <CFBundleExecutable>CPCSharp.Avalonia</CFBundleExecutable>
+    <CFBundleIconFile>macicon.icns</CFBundleIconFile>
+    <!-- Will be copied from output directory -->
+    <NSPrincipalClass>NSApplication</NSPrincipalClass>
+    <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
+    <NSHighResolutionCapable>true</NSHighResolutionCapable>
   </PropertyGroup>
-	<PropertyGroup Condition="$(DefineConstants.Contains(MACOS))">
-		<CFBundleName>CPCSharp</CFBundleName>
-		<CFBundleDisplayName>CPC#</CFBundleDisplayName>
-		<CFBundleIdentifier>com.dolbz.CPCSharp</CFBundleIdentifier>
-		<CFBundleVersion>1.0.0</CFBundleVersion>
-		<CFBundlePackageType>AAPL</CFBundlePackageType>
-		<CFBundleSignature>????</CFBundleSignature>
-		<CFBundleExecutable>CPCSharp.Avalonia</CFBundleExecutable>
-		<CFBundleIconFile>macicon.icns</CFBundleIconFile>
-		<!-- Will be copied from output directory -->
-		<NSPrincipalClass>NSApplication</NSPrincipalClass>
-		<CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
-		<NSHighResolutionCapable>true</NSHighResolutionCapable>
-		<RuntimeIdentifiers>osx-x64</RuntimeIdentifiers>
-	</PropertyGroup>
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-	<ApplicationIcon>Assets/appicon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets/appicon.ico</ApplicationIcon>
     <Version>1.0.0-beta1</Version>
   </PropertyGroup>
   <ItemGroup>

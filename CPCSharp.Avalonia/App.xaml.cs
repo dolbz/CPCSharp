@@ -32,7 +32,7 @@ namespace CPCSharp.App
 
 #if WINDOWS
             psg = new NAudioPSG();
-#elif MAC
+#elif MACOS
             psg = new MacPSGInterop();
 #else
             psg = new DefaultPSG();

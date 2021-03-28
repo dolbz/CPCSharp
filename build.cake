@@ -8,6 +8,8 @@ using System;
 const string macIconFile = "CPCSharp.Avalonia/macicon.icns";
 const string BuildArtifactsPath = "BuildArtifacts";
 
+string DefineConstants = "";
+
 var target = Argument("target", "Test");
 var configuration = Argument("configuration", "Release");
 
@@ -73,14 +75,13 @@ Task("BundleMac")
             WorkingDirectory = System.IO.Path.Combine(currentWorkingDir, "CPCSharp.Avalonia"),
             ArgumentCustomization = args => args
             .Append("-t:BundleApp")
-            .Append("-p:RuntimeIdentifier=osx-x64")
             .Append("-p:UseAppHost=true")
             .Append("-p:Configuration=" + configuration)
             .Append("-p:Platform=MacOS")
             .Append("-p:DefineConstants=MACOS")
         });
         EnsureDirectoryExists(BuildArtifactsPath);
-        CopyDirectory("CPCSharp.Avalonia/bin/MacOS/Release/net5.0/osx-x64/publish/CPC#.app", BuildArtifactsPath + "/CPC#.app");
+        CopyDirectory("CPCSharp.Avalonia/bin/MacOS/Release/net5.0/publish/CPC#.app", BuildArtifactsPath + "/CPC#.app");
     });
 
 Task("SignMac")
@@ -103,7 +104,7 @@ Task("PublishWindows")
             Runtime="win-x64",
             Configuration = configuration,
             ArgumentCustomization = args => args
-              .Append("-p:DefineConstants=WINDOWS")
+              .Append("-p:DefineConstants=" + DefineConstants)
         });
         // dotnet publish -r win-x64 -p:PublishSingleFile=true --self-contained true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=true
     });
@@ -112,13 +113,31 @@ Task("Rebuild")
     .IsDependentOn("Clean")
     .IsDependentOn("Build");
 
+Task("ResolveBuildConstants")
+    .Does(() => {
+        if (IsRunningOnMacOs()) {
+            DefineConstants = "MACOS";
+        }
+        if (IsRunningOnWindows()) {
+            DefineConstants = "WINDOWS";
+        }
+    });
+
 Task("Build")
+    .IsDependentOn("ResolveBuildConstants")
     .IsDependentOn("BuildNative")
     .Does(() =>
 {
+    DotNetCoreRestore("CPCSharp.Avalonia/CPCSharp.Avalonia.csproj", new DotNetCoreRestoreSettings {
+        ArgumentCustomization = args => args
+        .Append("-p:DefineConstants=" + DefineConstants)
+    });
     DotNetCoreBuild("CPCSharp.sln", new DotNetCoreBuildSettings
     {
+        NoRestore=true,
         Configuration = configuration,
+        ArgumentCustomization = args => args
+        .Append("-p:DefineConstants=" + DefineConstants)
     });
 });
 
