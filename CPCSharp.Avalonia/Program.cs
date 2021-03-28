@@ -2,9 +2,8 @@
 // Copyright (c) 2021, Nathan Randle. All rights reserved.  
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.  
 // 
-﻿using System;
+
 using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
 
 namespace CPCSharp
@@ -19,7 +18,7 @@ namespace CPCSharp
 
         // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()
-            => AppBuilder.Configure<CPCSharp.App.App>()
+            => AppBuilder.Configure<App.App>()
                 .UsePlatformDetect()
                 .UseReactiveUI();
     }

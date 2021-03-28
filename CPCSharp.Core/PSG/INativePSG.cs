@@ -21,5 +21,6 @@ namespace CPCSharp.Core.PSG {
         void SetEnvelopeFrequency(float frequency);
 
         void SetEnvelopeShape(EnvelopeShape envelope);
+        void Shutdown();
     }
 }

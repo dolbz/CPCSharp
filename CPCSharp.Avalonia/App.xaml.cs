@@ -1,13 +1,15 @@
 //  
 // Copyright (c) 2021, Nathan Randle. All rights reserved.  
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.  
-// 
+//
+
 using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using CPCSharp.App.PSG;
 using CPCSharp.App.Views;
 using CPCSharp.Core;
 using CPCSharp.Core.PSG;
@@ -26,13 +28,16 @@ namespace CPCSharp.App
 
             var os = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().OperatingSystem;
 
-            INativePSG psg = new DefaultPSG();
-            switch (os)
-            {
-                case OperatingSystemType.OSX:
-                    psg = new MacPSGInterop();
-                    break;
-            }
+            INativePSG psg;
+
+#if WINDOWS
+            psg = new NAudioPSG();
+#elif MAC
+            psg = new MacPSGInterop();
+#else
+            psg = new DefaultPSG();
+#endif
+
             _renderer = new ScreenRenderer();
             AvaloniaXamlLoader.Load(this);
             

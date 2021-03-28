@@ -77,6 +77,7 @@ Task("BundleMac")
             .Append("-p:UseAppHost=true")
             .Append("-p:Configuration=" + configuration)
             .Append("-p:Platform=MacOS")
+            .Append("-p:DefineConstants=MACOS")
         });
         EnsureDirectoryExists(BuildArtifactsPath);
         CopyDirectory("CPCSharp.Avalonia/bin/MacOS/Release/net5.0/osx-x64/publish/CPC#.app", BuildArtifactsPath + "/CPC#.app");
@@ -100,7 +101,9 @@ Task("PublishWindows")
             SelfContained=true,
             PublishSingleFile=true,
             Runtime="win-x64",
-            Configuration = configuration
+            Configuration = configuration,
+            ArgumentCustomization = args => args
+              .Append("-p:DefineConstants=WINDOWS")
         });
         // dotnet publish -r win-x64 -p:PublishSingleFile=true --self-contained true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=true
     });

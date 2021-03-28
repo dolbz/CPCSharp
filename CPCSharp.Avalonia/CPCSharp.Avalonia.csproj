@@ -1,20 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Condition="'$(DefineConstants)'==''">
+    <DefineConstants>MACOS</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(DefineConstants.Contains(WINDOWS))">
+    <TargetFramework>net5.0-windows</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="!$(DefineConstants.Contains(WINDOWS))">
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+	<PropertyGroup Condition="$(DefineConstants.Contains(MACOS))">
+		<CFBundleName>CPCSharp</CFBundleName>
+		<CFBundleDisplayName>CPC#</CFBundleDisplayName>
+		<CFBundleIdentifier>com.dolbz.CPCSharp</CFBundleIdentifier>
+		<CFBundleVersion>1.0.0</CFBundleVersion>
+		<CFBundlePackageType>AAPL</CFBundlePackageType>
+		<CFBundleSignature>????</CFBundleSignature>
+		<CFBundleExecutable>CPCSharp.Avalonia</CFBundleExecutable>
+		<CFBundleIconFile>macicon.icns</CFBundleIconFile>
+		<!-- Will be copied from output directory -->
+		<NSPrincipalClass>NSApplication</NSPrincipalClass>
+		<CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
+		<NSHighResolutionCapable>true</NSHighResolutionCapable>
+		<RuntimeIdentifiers>osx-x64</RuntimeIdentifiers>
+	</PropertyGroup>
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
-    <CFBundleName>CPCSharp</CFBundleName>
-    <CFBundleDisplayName>CPC#</CFBundleDisplayName>
-    <CFBundleIdentifier>com.dolbz.CPCSharp</CFBundleIdentifier>
-    <CFBundleVersion>1.0.0</CFBundleVersion>
-    <CFBundlePackageType>AAPL</CFBundlePackageType>
-    <CFBundleSignature>????</CFBundleSignature>
-    <CFBundleExecutable>CPCSharp.Avalonia</CFBundleExecutable>
-    <CFBundleIconFile>macicon.icns</CFBundleIconFile> <!-- Will be copied from output directory -->
-    <NSPrincipalClass>NSApplication</NSPrincipalClass>
-    <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
-    <NSHighResolutionCapable>true</NSHighResolutionCapable>
-    <RuntimeIdentifiers>osx-x64</RuntimeIdentifiers>
-    <ApplicationIcon>Assets/appicon.ico</ApplicationIcon>
+	<ApplicationIcon>Assets/appicon.ico</ApplicationIcon>
     <Version>1.0.0-beta1</Version>
   </PropertyGroup>
   <ItemGroup>
@@ -30,13 +41,16 @@
   <ItemGroup>
     <ProjectReference Include="..\CPCSharp.Core\CPCSharp.Core.csproj" />
   </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)' == 'Debug' Or '$(Platform)' == 'MacOS'">
+  <ItemGroup Condition="$(DefineConstants.Contains(MACOS))">
     <None Include="..\NativeLibs\libMacPSG.dylib">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="macicon.icns">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup Condition="$(DefineConstants.Contains(WINDOWS))">
+    <PackageReference Include="NAudio" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.9.12" />

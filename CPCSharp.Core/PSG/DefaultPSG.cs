@@ -36,5 +36,9 @@
         public void SetTone(PSGChannel channel, float frequency)
         {
         }
+
+        public void Shutdown()
+        {
+        }
     }
 }

@@ -48,7 +48,7 @@ namespace CPCSharp.Core
 
         private readonly CRTC _crtc;
         private readonly PPI _ppi;
-
+        private readonly INativePSG _psg;
         private PlayableTape _tape;
         private List<IODevice> _ioDevices = new List<IODevice>();
 
@@ -85,6 +85,7 @@ namespace CPCSharp.Core
             _gateArray = new GateArray(renderer);
             _crtc = new CRTC(renderer, _gateArray);
             _ppi = new PPI(_crtc, psg);
+            _psg = psg;
         }
 
         public void LoadTape(string path)
@@ -151,7 +152,11 @@ namespace CPCSharp.Core
 
         public void Shutdown()
         {
-            _cpuRunning = false;
+            lock (_cpu.CpuStateLock)
+            {
+                _cpuRunning = false;
+            }
+            _psg.Shutdown();
         }
 
         public void Step()

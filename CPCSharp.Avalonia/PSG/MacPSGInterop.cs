@@ -2,9 +2,11 @@
 // Copyright (c) 2021, Nathan Randle. All rights reserved.  
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.  
 // 
+
+using CPCSharp.Core.PSG;
 using System.Runtime.InteropServices;
 
-namespace CPCSharp.Core.PSG
+namespace CPCSharp.App.PSG
 {
     public class MacPSGInterop : INativePSG {
 
@@ -56,6 +58,11 @@ namespace CPCSharp.Core.PSG
 
         public void SetEnvelopeShape(EnvelopeShape envelope) {
             SetEnvelopeShapeNative(envelope);
+        }
+
+        public void Shutdown()
+        {
+            // I don't think anything is needed here
         }
     }
 }
