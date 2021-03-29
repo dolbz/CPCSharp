@@ -11,24 +11,29 @@ using System;
 
 namespace CPCSharp.App.PSG
 {
+    /// <summary>
+    /// Adapted version of the SignalGenerator class in NAudio. For code from NAudio the following copyright notice/license applies:
+    /// 
+    /// Copyright 2020 Mark Heath
+    /// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
+    /// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
+    /// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+    /// is furnished to do so, subject to the following conditions:
+    /// 
+    /// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+    /// 
+    /// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+    /// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+    /// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR 
+    /// IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    /// </summary>
     public class AyChannelSignalGenerator : ISampleProvider
     {
         // Wave format
         private readonly WaveFormat waveFormat;
 
-        // Random Number for the White Noise & Pink Noise Generator
-        private readonly Random random = new Random();
-
-        private readonly double[] pinkNoiseBuffer = new double[7];
-
-        // Const Math
-        private const double TwoPi = 2 * Math.PI;
-
         // Generator variable
         private int nSample;
-
-        // Sweep Generator variable
-        private double phi;
 
         /// <summary>
         /// Initializes a new instance for the Generator (Default :: 44.1Khz, 2 channels, Sinus, Frequency = 440, Gain = 1)
@@ -46,7 +51,6 @@ namespace CPCSharp.App.PSG
         /// <param name="channel">Number of channels</param>
         public AyChannelSignalGenerator(int sampleRate, int channel)
         {
-            phi = 0;
             waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, channel);
 
             // Default
@@ -66,6 +70,24 @@ namespace CPCSharp.App.PSG
         /// Sin, Square, Triangle, SawTooth, Sweep (Start Frequency).
         /// </summary>
         public double Frequency { get; set; }
+
+        private int _noisePeriod = 1;
+        private int _noiseCount = 0;
+
+        public double NoiseFrequency
+        {
+            set
+            {
+                if (value == 0) {
+                    _noisePeriod = 1;
+                }
+                else
+                {
+                    _noisePeriod = (int)(waveFormat.SampleRate / value);
+                }
+                _noiseCount = 0;
+            }
+        }
 
         /// <summary>
         /// Return Log of Frequency Start (Read only)
@@ -101,6 +123,27 @@ namespace CPCSharp.App.PSG
         /// </summary>
         public double SweepLengthSecs { get; set; }
 
+        private int _noiseSeed = 0xffff;
+
+        private bool NextNoiseBit
+        {
+            get
+            {
+                _noiseSeed ^= (((_noiseSeed & 1) ^ ((_noiseSeed >> 3) & 1)) << 17);
+                _noiseSeed >>= 1;
+
+                return CurrentNoiseBit;
+            }
+        }
+
+        private bool CurrentNoiseBit
+        {
+            get
+            {
+                return (_noiseSeed & 1) == 1;
+            }
+        }
+
         /// <summary>
         /// Reads from this provider.
         /// </summary>
@@ -116,14 +159,33 @@ namespace CPCSharp.App.PSG
             // Complete Buffer
             for (int sampleCount = 0; sampleCount < count / waveFormat.Channels; sampleCount++)
             {
+                var noiseBit = CurrentNoiseBit;
+                if (_noiseCount == _noisePeriod) {
+                    var nextNoiseBit = NextNoiseBit;
+                    if (NoiseEnabled)
+                    {
+                        noiseBit = nextNoiseBit;
+                    }
+                }
+
                 // Square Generator
                 multiple = 2 * Frequency / waveFormat.SampleRate;
                 sampleSaw = ((nSample * multiple) % 2) - 1;
                 sampleValue = sampleSaw > 0 ? Gain : -Gain;
 
-                if (!ToneEnabled)
-                {
+
+                if ((!ToneEnabled || sampleSaw > 0) && (!NoiseEnabled || noiseBit)) {
                     sampleValue = Gain;
+                } else
+                {
+                    sampleValue = -Gain;
+                 }
+
+
+                _noiseCount += 1;
+                if (_noiseCount > _noisePeriod)
+                {
+                    _noiseCount = 0;
                 }
 
                 nSample++;
@@ -139,16 +201,6 @@ namespace CPCSharp.App.PSG
             }
             return count;
         }
-
-        /// <summary>
-        /// Private :: Random for WhiteNoise &amp; Pink Noise (Value form -1 to 1)
-        /// </summary>
-        /// <returns>Random value from -1 to +1</returns>
-        private double NextRandomTwo()
-        {
-            return 2 * random.NextDouble() - 1;
-        }
-
     }
 
     public class NAudioPSG : INativePSG
@@ -176,7 +228,7 @@ namespace CPCSharp.App.PSG
             };
 
             var mix = new MixingSampleProvider(new[] { _channelA, _channelB, _channelC });
-            
+
             _wasapiOut = new WasapiOut();
             _wasapiOut.Init(mix);
             _wasapiOut.Play();
@@ -210,6 +262,7 @@ namespace CPCSharp.App.PSG
         public void SetChannelAttributes(PSGChannel channel, bool channelEnabled, bool noiseOn)
         {
             GetObject(channel).ToneEnabled = channelEnabled;
+            GetObject(channel).NoiseEnabled = noiseOn;
         }
 
         public void SetEnvelopeFrequency(float frequency)
@@ -224,7 +277,10 @@ namespace CPCSharp.App.PSG
 
         public void SetNoiseFrequency(float frequency)
         {
-            // TODO noise
+            // TODO there's certainly a nicer way to tie these together than this
+            _channelA.NoiseFrequency = frequency;
+            _channelB.NoiseFrequency = frequency;
+            _channelC.NoiseFrequency = frequency;
         }
 
         public void SetTone(PSGChannel channel, float frequency)
