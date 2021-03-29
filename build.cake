@@ -121,6 +121,7 @@ Task("ResolveBuildConstants")
         if (IsRunningOnWindows()) {
             DefineConstants = "WINDOWS";
         }
+        Information("Defined build constants: {0}", DefineConstants);
     });
 
 Task("Build")
@@ -132,7 +133,7 @@ Task("Build")
         ArgumentCustomization = args => args
         .Append("-p:DefineConstants=" + DefineConstants)
     });
-    DotNetCoreBuild("CPCSharp.sln", new DotNetCoreBuildSettings
+    DotNetCoreBuild("CPCSharp.Avalonia/CPCSharp.Avalonia.csproj", new DotNetCoreBuildSettings
     {
         NoRestore=true,
         Configuration = configuration,
