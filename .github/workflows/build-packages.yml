@@ -13,12 +13,12 @@ jobs:
         with:
           target: PublishWindows
       - name: Rename executable
-        run: Rename-Item -Path "CPCSharp.Avalonia/bin/Release/net5.0/win-x64/publish/CPCSharp.Avalonia.exe" -NewName "CPCSharp.exe"
+        run: Rename-Item -Path "CPCSharp.Avalonia/bin/Release/net5.0-windows/win-x64/publish/CPCSharp.Avalonia.exe" -NewName "CPCSharp.exe"
       - name: Publish artifacts
         uses: actions/upload-artifact@v2
         with:
           name: Windows Executable
-          path: CPCSharp.Avalonia/bin/Release/net5.0/win-x64/publish/CPCSharp.exe
+          path: CPCSharp.Avalonia/bin/Release/net5.0-windows/win-x64/publish/CPCSharp.exe
   package-macos:
     runs-on: macos-latest
     steps:

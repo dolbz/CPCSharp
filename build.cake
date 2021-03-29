@@ -75,13 +75,14 @@ Task("BundleMac")
             WorkingDirectory = System.IO.Path.Combine(currentWorkingDir, "CPCSharp.Avalonia"),
             ArgumentCustomization = args => args
             .Append("-t:BundleApp")
+            .Append("-p:RuntimeIdentifier=osx-x64")
             .Append("-p:UseAppHost=true")
             .Append("-p:Configuration=" + configuration)
             .Append("-p:Platform=MacOS")
             .Append("-p:DefineConstants=MACOS")
         });
         EnsureDirectoryExists(BuildArtifactsPath);
-        CopyDirectory("CPCSharp.Avalonia/bin/MacOS/Release/net5.0/publish/CPC#.app", BuildArtifactsPath + "/CPC#.app");
+        CopyDirectory("CPCSharp.Avalonia/bin/MacOS/Release/net5.0/osx-x64/publish/CPC#.app", BuildArtifactsPath + "/CPC#.app");
     });
 
 Task("SignMac")
