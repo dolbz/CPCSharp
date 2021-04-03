@@ -80,6 +80,7 @@ Task("BundleMac")
             .Append("-p:Configuration=" + configuration)
             .Append("-p:Platform=MacOS")
             .Append("-p:DefineConstants=MACOS")
+            .Append($"-p:BuildVersion={EnvironmentVariable("INPUT_VERSION")}")
         });
         EnsureDirectoryExists(BuildArtifactsPath);
         CopyDirectory("CPCSharp.Avalonia/bin/MacOS/Release/net5.0/osx-x64/publish/CPC#.app", BuildArtifactsPath + "/CPC#.app");
@@ -105,7 +106,8 @@ Task("PublishWindows")
             Runtime="win-x64",
             Configuration = configuration,
             ArgumentCustomization = args => args
-              .Append("-p:DefineConstants=" + DefineConstants)
+              .Append($"-p:DefineConstants={DefineConstants}")
+              .Append($"-p:BuildVersion={EnvironmentVariable("INPUT_VERSION")}")
         });
         // dotnet publish -r win-x64 -p:PublishSingleFile=true --self-contained true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=true
     });
@@ -140,6 +142,7 @@ Task("Build")
         Configuration = configuration,
         ArgumentCustomization = args => args
         .Append("-p:DefineConstants=" + DefineConstants)
+        .Append($"-p:BuildVersion={EnvironmentVariable("INPUT_VERSION")}")
     });
 });
 

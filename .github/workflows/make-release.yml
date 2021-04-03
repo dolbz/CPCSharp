@@ -1,0 +1,103 @@
+name: Make Release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number'
+        required: true
+env:
+  INPUT_VERSION: '${{ github.event.inputs.version }}'
+jobs:
+  package-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Cake publish script
+        uses: cake-build/cake-action@v1
+        with:
+          target: PublishWindows
+      - name: Rename executable
+        run: Rename-Item -Path "CPCSharp.Avalonia/bin/Release/net5.0-windows/win-x64/publish/CPCSharp.Avalonia.exe" -NewName "CPCSharp.exe"
+      - name: Publish artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Windows Executable
+          path: CPCSharp.Avalonia/bin/Release/net5.0-windows/win-x64/publish/CPCSharp.exe
+  package-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Import codesigning certificates
+        uses: apple-actions/import-codesign-certs@v1
+        with: 
+          p12-file-base64: ${{ secrets.DEVELOPER_ID_CERTIFICATE_P12 }}
+          p12-password: ${{ secrets.DEVELOPER_ID_CERTIFICATE_P12_PASSWORD }}
+      - name: Cake publish script
+        uses: cake-build/cake-action@v1
+        with:
+          target: PublishMac
+      - name: "Notarize Release Build"
+        uses: devbotsxyz/xcode-notarize@v1
+        with:
+          product-path: BuildArtifacts/CPC#.app
+          appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
+          appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
+      - name: "Staple Release Build"
+        uses: devbotsxyz/xcode-staple@v1
+        with:
+          product-path: BuildArtifacts/CPC#.app
+          verbose: true
+      - name: Zip App Bundle
+        run: ditto -V -c -k --keepParent BuildArtifacts/CPC#.app BuildArtifacts/CPC#.zip
+      - name: Publish artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: macOS Executable
+          path: BuildArtifacts/CPC#.zip
+  create-release:
+    needs: [package-windows, package-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Windows Build
+        uses: actions/download-artifact@v2
+        with:
+          name: Windows Executable
+      - name: Download macOS Build
+        uses: actions/download-artifact@v2
+        with:
+          name: macOS Executable
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.INPUT_VERSION }}
+          release_name: Release v${{ env.INPUT_VERSION }}
+          draft: true
+          prerelease: false
+      - name: Upload macOS build to release
+        id: upload-release-asset-mac
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: ./CPC#.zip
+          asset_name: CPCSharp-macOS.zip
+          asset_content_type: application/zip
+      - name: Upload Windows build to release
+        id: upload-release-asset-win 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: ./CPCSharp.exe
+          asset_name: CPCSharp-Windows.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
+
+
+      

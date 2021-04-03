@@ -2,11 +2,19 @@
   <PropertyGroup Condition="'$(DefineConstants)'==''">
     <DefineConstants>MACOS</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="$(DefineConstants.Contains(WINDOWS))">
-    <TargetFramework>net5.0-windows</TargetFramework>
-  </PropertyGroup>
+  <Choose>
+    <When Condition="$(DefineConstants.Contains(WINDOWS))">
+      <PropertyGroup>
+        <TargetFramework>net5.0-windows</TargetFramework>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
   <PropertyGroup Condition="$(DefineConstants.Contains(MACOS))">
-    <TargetFramework>net5.0</TargetFramework>
     <RuntimeIdentifiers>osx-x64</RuntimeIdentifiers>
     <CFBundleName>CPCSharp</CFBundleName>
     <CFBundleDisplayName>CPC#</CFBundleDisplayName>
@@ -21,10 +29,21 @@
     <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
     <NSHighResolutionCapable>true</NSHighResolutionCapable>
   </PropertyGroup>
+  <Choose>
+    <When Condition="'$(BuildVersion)'!=''">
+      <PropertyGroup>
+        <Version>$(BuildVersion)</Version>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <Version>0.0.1</Version>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <ApplicationIcon>Assets/appicon.ico</ApplicationIcon>
-    <Version>1.0.0-beta1</Version>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Models\" />
