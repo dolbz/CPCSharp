@@ -14,6 +14,8 @@ using CPCSharp.App.Views;
 using CPCSharp.Core;
 using CPCSharp.Core.PSG;
 using CPCSharp.ViewModels;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace CPCSharp.App
 {
@@ -33,7 +35,19 @@ namespace CPCSharp.App
 #if WINDOWS
             psg = new NAudioPSG();
 #elif MACOS
-            psg = new MacPSGInterop();
+            XDocument doc = XDocument.Load("/System/Library/CoreServices/SystemVersion.plist");
+            var keyValues = doc.Descendants("dict")
+            .SelectMany(d => d.Elements("key").Zip(d.Elements().Where(e => e.Name != "key"), (k, v) => new { Key = k, Value = v }))
+            .ToDictionary(i => i.Key.Value, i => i.Value.Value);
+
+            var rawProductVersion = keyValues["ProductVersion"];
+            var productVersionParts = rawProductVersion.Split(".").Select(x => int.Parse(x)).ToArray();
+
+            if (productVersionParts[0] > 10 || (productVersionParts[0] == 10 && productVersionParts[1] >= 15)) {
+                psg = new MacPSGInterop();
+            } else {
+                psg = new DefaultPSG();
+            }
 #else
             psg = new DefaultPSG();
 #endif
