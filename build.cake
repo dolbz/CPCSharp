@@ -22,7 +22,7 @@ var currentWorkingDir = System.IO.Directory.GetCurrentDirectory();
 Task("Clean")
     .Does(() =>
 {
-    DotNetCoreClean("CPCSharp.sln", new DotNetCoreCleanSettings
+    DotNetClean("CPCSharp.sln", new DotNetCleanSettings
     {
         Configuration = configuration,
     });
@@ -80,7 +80,7 @@ Task("BundleMac")
     .Does(() => {
         // Publish for x64 (Intel)
         Information("Publishing for osx-x64 (Intel)...");
-        DotNetCorePublish("CPCSharp.Avalonia/CPCSharp.Avalonia.csproj", new DotNetCorePublishSettings {
+        DotNetPublish("CPCSharp.Avalonia/CPCSharp.Avalonia.csproj", new DotNetPublishSettings {
             Configuration = configuration,
             Runtime = "osx-x64",
             SelfContained = true,
@@ -92,7 +92,7 @@ Task("BundleMac")
 
         // Publish for ARM64 (Apple Silicon)
         Information("Publishing for osx-arm64 (Apple Silicon)...");
-        DotNetCorePublish("CPCSharp.Avalonia/CPCSharp.Avalonia.csproj", new DotNetCorePublishSettings {
+        DotNetPublish("CPCSharp.Avalonia/CPCSharp.Avalonia.csproj", new DotNetPublishSettings {
             Configuration = configuration,
             Runtime = "osx-arm64",
             SelfContained = true,
@@ -213,7 +213,7 @@ Task("ExternalPublishMac")
 Task("PublishWindows")
     .IsDependentOn("Build")
     .Does(() => {
-        DotNetCorePublish("CPCSharp.Avalonia/CPCSharp.Avalonia.csproj", new DotNetCorePublishSettings {
+        DotNetPublish("CPCSharp.Avalonia/CPCSharp.Avalonia.csproj", new DotNetPublishSettings {
             IncludeNativeLibrariesForSelfExtract=true,
             PublishTrimmed=true,
             SelfContained=true,
@@ -247,11 +247,11 @@ Task("Build")
     .IsDependentOn("BuildNative")
     .Does(() =>
 {
-    DotNetCoreRestore("CPCSharp.Avalonia/CPCSharp.Avalonia.csproj", new DotNetCoreRestoreSettings {
+    DotNetRestore("CPCSharp.Avalonia/CPCSharp.Avalonia.csproj", new DotNetRestoreSettings {
         ArgumentCustomization = args => args
         .Append("-p:DefineConstants=" + DefineConstants)
     });
-    DotNetCoreBuild("CPCSharp.Avalonia/CPCSharp.Avalonia.csproj", new DotNetCoreBuildSettings
+    DotNetBuild("CPCSharp.Avalonia/CPCSharp.Avalonia.csproj", new DotNetBuildSettings
     {
         NoRestore=true,
         Configuration = configuration,
@@ -265,7 +265,7 @@ Task("Test")
     .IsDependentOn("Build")
     .Does(() =>
 {
-    DotNetCoreTest("CPCSharp.sln", new DotNetCoreTestSettings
+    DotNetTest("CPCSharp.sln", new DotNetTestSettings
     {
         Configuration = configuration,
         NoBuild = true,
