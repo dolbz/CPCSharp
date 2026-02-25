@@ -14,42 +14,44 @@
     <conv:ByteHexValueConverter x:Key="ByteHexValueConverter" />
     <conv:ShortHexValueConverter x:Key="ShortHexValueConverter" />
   </Window.Resources>
-  <StackPanel Orientation="Vertical">
-    <StackPanel Orientation="Horizontal">
+  <Grid RowDefinitions="Auto,*,Auto">
+    <!-- Buttons -->
+    <StackPanel Grid.Row="0" Orientation="Horizontal">
       <Button Command="{Binding Continue}" Width="50" Content="Continue"/>
       <Button Command="{Binding Step}" Width="50" Content="Step"/>
       <Button Command="{Binding StepOver}" Width="50" Content="Step Over" />
       <Button Command="{Binding Reset}" Width="50" Content="Reset"/>
       <Button Command="{Binding MemoryView}" Width="50" Content="Memory View"/>
     </StackPanel>
-    <StackPanel Orientation="Horizontal">
-      <ListBox ItemsSource="{Binding ProgramListing}" Width="300" SelectedIndex="{Binding SelectedRamIndex}" AutoScrollToSelectedItem="True">
+    <!-- Listings + registers, fills available height -->
+    <Grid Grid.Row="1" ColumnDefinitions="300,300,300,*">
+      <ListBox Grid.Column="0" ItemsSource="{Binding ProgramListing}" SelectedIndex="{Binding SelectedRamIndex}" AutoScrollToSelectedItem="True">
         <ListBox.ItemTemplate>
             <DataTemplate>
               <TextBlock Text="{Binding AsmDescription}" />
             </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
-      <ListBox ItemsSource="{Binding LowerRomListing}" Width="300" SelectedIndex="{Binding SelectedLowerRomIndex}" AutoScrollToSelectedItem="True">
+      <ListBox Grid.Column="1" ItemsSource="{Binding LowerRomListing}" SelectedIndex="{Binding SelectedLowerRomIndex}" AutoScrollToSelectedItem="True">
         <ListBox.ItemTemplate>
             <DataTemplate>
               <TextBlock Text="{Binding AsmDescription}" />
             </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
-      <ListBox ItemsSource="{Binding UpperRomListing}" Width="300" SelectedIndex="{Binding SelectedUpperRomIndex}" AutoScrollToSelectedItem="True">
+      <ListBox Grid.Column="2" ItemsSource="{Binding UpperRomListing}" SelectedIndex="{Binding SelectedUpperRomIndex}" AutoScrollToSelectedItem="True">
         <ListBox.ItemTemplate>
             <DataTemplate>
               <TextBlock Text="{Binding AsmDescription}" />
             </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
-      <StackPanel Orientation="Vertical">
+      <StackPanel Grid.Column="3" Orientation="Vertical">
         <StackPanel Orientation="Horizontal">
           <TextBlock Text="PC: " /><TextBlock Text="{Binding Snapshot.Cpu.PC, Converter={StaticResource ShortHexValueConverter}}" />
           <TextBlock Text="Frequency: " /><TextBlock Text="{Binding Snapshot.FrequencyMHz }" /><TextBlock Text="MHz" />
         </StackPanel>
-        <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"  Margin="4">
+        <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="4">
           <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
             <TextBlock Text="A: " /><TextBlock Text="{Binding Snapshot.Cpu.A, Converter={StaticResource ByteHexValueConverter}}" />
           </StackPanel>
@@ -96,8 +98,6 @@
           <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="1">
             <TextBlock Text="R: " /><TextBlock Text="{Binding Snapshot.Cpu.R, Converter={StaticResource ByteHexValueConverter}}" />
           </StackPanel>
-          <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="2">
-          </StackPanel>
         </Grid>
         <StackPanel Orientation="Vertical">
           <StackPanel Orientation="Horizontal">
@@ -124,8 +124,9 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
       </StackPanel>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal">
+    </Grid>
+    <!-- Breakpoints -->
+    <StackPanel Grid.Row="2" Orientation="Horizontal">
       <StackPanel Orientation="Vertical">
         <StackPanel Orientation="Horizontal">
           <TextBlock Text="Breakpoint Address: " />
@@ -139,8 +140,8 @@
                 <TextBlock Text="{Binding Address, Converter={StaticResource ShortHexValueConverter}}" />
               </DataTemplate>
           </ListBox.ItemTemplate>
-        </ListBox>    
+        </ListBox>
       </StackPanel>
     </StackPanel>
-  </StackPanel>
+  </Grid>
 </Window>
