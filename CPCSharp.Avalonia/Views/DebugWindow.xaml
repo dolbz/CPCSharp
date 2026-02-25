@@ -3,145 +3,223 @@
         xmlns:vm="clr-namespace:CPCSharp.App.ViewModels;assembly=CPCSharp.App"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d"
         x:Class="CPCSharp.App.Views.DebugWindow"
         xmlns:conv="clr-namespace:CPCSharp.App.ValueConverters"
-        Title="Debugger">
+        Title="Debugger"
+        Width="1300" Height="750"
+        MinWidth="900" MinHeight="500">
   <Design.DataContext>
     <vm:DebugWindowViewModel/>
   </Design.DataContext>
   <Window.Resources>
     <conv:ByteHexValueConverter x:Key="ByteHexValueConverter" />
     <conv:ShortHexValueConverter x:Key="ShortHexValueConverter" />
+    <conv:FlagsValueConverter x:Key="FlagsValueConverter" />
   </Window.Resources>
+  <Window.Styles>
+    <Style Selector=".registers TextBlock">
+      <Setter Property="FontFamily" Value="Menlo,Monaco,'Courier New',monospace"/>
+      <Setter Property="FontSize" Value="12"/>
+    </Style>
+  </Window.Styles>
+
   <Grid RowDefinitions="Auto,*,Auto">
-    <!-- Buttons -->
-    <StackPanel Grid.Row="0" Orientation="Horizontal">
-      <Button Command="{Binding Continue}" Width="50" Content="Continue"/>
-      <Button Command="{Binding Step}" Width="50" Content="Step"/>
-      <Button Command="{Binding StepOver}" Width="50" Content="Step Over" />
-      <Button Command="{Binding Reset}" Width="50" Content="Reset"/>
-      <Button Command="{Binding MemoryView}" Width="50" Content="Memory View"/>
-    </StackPanel>
-    <!-- Listings + registers, fills available height -->
-    <Grid Grid.Row="1" ColumnDefinitions="300,300,300,*">
-      <ListBox Grid.Column="0" ItemsSource="{Binding ProgramListing}" SelectedIndex="{Binding SelectedRamIndex}" AutoScrollToSelectedItem="True">
-        <ListBox.ItemTemplate>
-            <DataTemplate>
-              <TextBlock Text="{Binding AsmDescription}" />
-            </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
-      <ListBox Grid.Column="1" ItemsSource="{Binding LowerRomListing}" SelectedIndex="{Binding SelectedLowerRomIndex}" AutoScrollToSelectedItem="True">
-        <ListBox.ItemTemplate>
-            <DataTemplate>
-              <TextBlock Text="{Binding AsmDescription}" />
-            </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
-      <ListBox Grid.Column="2" ItemsSource="{Binding UpperRomListing}" SelectedIndex="{Binding SelectedUpperRomIndex}" AutoScrollToSelectedItem="True">
-        <ListBox.ItemTemplate>
-            <DataTemplate>
-              <TextBlock Text="{Binding AsmDescription}" />
-            </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
-      <StackPanel Grid.Column="3" Orientation="Vertical">
-        <StackPanel Orientation="Horizontal">
-          <TextBlock Text="PC: " /><TextBlock Text="{Binding Snapshot.Cpu.PC, Converter={StaticResource ShortHexValueConverter}}" />
-          <TextBlock Text="Frequency: " /><TextBlock Text="{Binding Snapshot.FrequencyMHz }" /><TextBlock Text="MHz" />
-        </StackPanel>
-        <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="4">
-          <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
-            <TextBlock Text="A: " /><TextBlock Text="{Binding Snapshot.Cpu.A, Converter={StaticResource ByteHexValueConverter}}" />
-          </StackPanel>
-          <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
-            <TextBlock Text="F: " /><TextBlock Text="{Binding Snapshot.Cpu.F, Converter={StaticResource ByteHexValueConverter}}" />
-          </StackPanel>
-          <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="2">
-            <TextBlock Text="AF': " /><TextBlock Text="{Binding Snapshot.Cpu.AF_, Converter={StaticResource ShortHexValueConverter}}" />
-          </StackPanel>
 
-          <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0">
-            <TextBlock Text="B: " /><TextBlock Text="{Binding Snapshot.Cpu.B, Converter={StaticResource ByteHexValueConverter}}" />
-          </StackPanel>
-          <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1">
-            <TextBlock Text="C: " /><TextBlock Text="{Binding Snapshot.Cpu.C, Converter={StaticResource ByteHexValueConverter}}" />
-          </StackPanel>
-          <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="2">
-            <TextBlock Text="BC': " /><TextBlock Text="{Binding Snapshot.Cpu.BC_, Converter={StaticResource ShortHexValueConverter}}" />
-          </StackPanel>
-
-          <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="0">
-            <TextBlock Text="D: " /><TextBlock Text="{Binding Snapshot.Cpu.D, Converter={StaticResource ByteHexValueConverter}}" />
-          </StackPanel>
-          <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1">
-            <TextBlock Text="E: " /><TextBlock Text="{Binding Snapshot.Cpu.E, Converter={StaticResource ByteHexValueConverter}}" />
-          </StackPanel>
-          <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="2">
-            <TextBlock Text="DE': " /><TextBlock Text="{Binding Snapshot.Cpu.DE_, Converter={StaticResource ShortHexValueConverter}}" />
-          </StackPanel>
-
-          <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0">
-            <TextBlock Text="H: " /><TextBlock Text="{Binding Snapshot.Cpu.H, Converter={StaticResource ByteHexValueConverter}}" />
-          </StackPanel>
-          <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1">
-            <TextBlock Text="L: " /><TextBlock Text="{Binding Snapshot.Cpu.L, Converter={StaticResource ByteHexValueConverter}}" />
-          </StackPanel>
-          <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="2">
-            <TextBlock Text="HL': " /><TextBlock Text="{Binding Snapshot.Cpu.HL_, Converter={StaticResource ShortHexValueConverter}}" />
-          </StackPanel>
-
-          <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="0">
-            <TextBlock Text="I: " /><TextBlock Text="{Binding Snapshot.Cpu.I, Converter={StaticResource ByteHexValueConverter}}" />
-          </StackPanel>
-          <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="1">
-            <TextBlock Text="R: " /><TextBlock Text="{Binding Snapshot.Cpu.R, Converter={StaticResource ByteHexValueConverter}}" />
-          </StackPanel>
-        </Grid>
-        <StackPanel Orientation="Vertical">
-          <StackPanel Orientation="Horizontal">
-            <TextBlock Text="IX: " /><TextBlock Text="{Binding Snapshot.Cpu.IX, Converter={StaticResource ShortHexValueConverter}}" />
-          </StackPanel>
-          <StackPanel Orientation="Horizontal">
-            <TextBlock Text="IY: " /><TextBlock Text="{Binding Snapshot.Cpu.IY, Converter={StaticResource ShortHexValueConverter}}" />
-          </StackPanel>
-          <StackPanel Orientation="Horizontal">
-            <TextBlock Text="SP: " /><TextBlock Text="{Binding Snapshot.Cpu.SP, Converter={StaticResource ShortHexValueConverter}}" />
-          </StackPanel>
-        </StackPanel>
-        <TextBlock Text="Stack: " />
-        <ItemsControl ItemsSource="{Binding Snapshot.Stack}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding, Converter={StaticResource ShortHexValueConverter}}" />
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+    <!-- Toolbar -->
+    <Border Grid.Row="0" Padding="8,6" BorderThickness="0,0,0,1" BorderBrush="#20000000">
+      <StackPanel Orientation="Horizontal" Spacing="4">
+        <Button Command="{Binding Continue}" Content="Continue" Padding="10,4"/>
+        <Button Command="{Binding Step}" Content="Step" Padding="10,4"/>
+        <Button Command="{Binding StepOver}" Content="Step Over" Padding="10,4"/>
+        <Rectangle Width="1" Margin="4,2" VerticalAlignment="Stretch" Fill="#20000000"/>
+        <Button Command="{Binding Reset}" Content="Reset" Padding="10,4"/>
+        <Rectangle Width="1" Margin="4,2" VerticalAlignment="Stretch" Fill="#20000000"/>
+        <Button Command="{Binding MemoryView}" Content="Memory" Padding="10,4"/>
       </StackPanel>
-    </Grid>
-    <!-- Breakpoints -->
-    <StackPanel Grid.Row="2" Orientation="Horizontal">
-      <StackPanel Orientation="Vertical">
-        <StackPanel Orientation="Horizontal">
-          <TextBlock Text="Breakpoint Address: " />
-          <TextBox Width="50" Text="{Binding NewBreakpointAddress}" />
-          <Button Command="{Binding AddBreakpoint}" Width="50" Content="Add" />
-          <Button Command="{Binding RemoveBreakpoint}" Width="50" Content="Remove" />
-        </StackPanel>
-        <ListBox ItemsSource="{Binding Breakpoints}" SelectedIndex="{Binding SelectedBreakpointIndex}" Width="200" Height="300">
+    </Border>
+
+    <!-- Listings + registers -->
+    <Grid Grid.Row="1" ColumnDefinitions="300,300,300,*">
+
+      <!-- RAM listing -->
+      <DockPanel Grid.Column="0">
+        <Border DockPanel.Dock="Top" Padding="8,4" BorderThickness="0,0,0,1" BorderBrush="#20000000">
+          <TextBlock Text="RAM" FontSize="11" FontWeight="SemiBold" Opacity="0.5"/>
+        </Border>
+        <ListBox ItemsSource="{Binding ProgramListing}"
+                 SelectedIndex="{Binding SelectedRamIndex}"
+                 AutoScrollToSelectedItem="True"
+                 FontFamily="Menlo,Monaco,'Courier New',monospace"
+                 FontSize="11"
+                 BorderThickness="0,0,1,0"
+                 BorderBrush="#20000000"
+                 Padding="4,2">
           <ListBox.ItemTemplate>
-              <DataTemplate>
-                <TextBlock Text="{Binding Address, Converter={StaticResource ShortHexValueConverter}}" />
-              </DataTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding AsmDescription}" Padding="0,1"/>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+
+      <!-- Lower ROM listing -->
+      <DockPanel Grid.Column="1">
+        <Border DockPanel.Dock="Top" Padding="8,4" BorderThickness="0,0,0,1" BorderBrush="#20000000">
+          <TextBlock Text="Lower ROM" FontSize="11" FontWeight="SemiBold" Opacity="0.5"/>
+        </Border>
+        <ListBox ItemsSource="{Binding LowerRomListing}"
+                 SelectedIndex="{Binding SelectedLowerRomIndex}"
+                 AutoScrollToSelectedItem="True"
+                 FontFamily="Menlo,Monaco,'Courier New',monospace"
+                 FontSize="11"
+                 BorderThickness="0,0,1,0"
+                 BorderBrush="#20000000"
+                 Padding="4,2">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding AsmDescription}" Padding="0,1"/>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+
+      <!-- Upper ROM listing -->
+      <DockPanel Grid.Column="2">
+        <Border DockPanel.Dock="Top" Padding="8,4" BorderThickness="0,0,0,1" BorderBrush="#20000000">
+          <TextBlock Text="Upper ROM" FontSize="11" FontWeight="SemiBold" Opacity="0.5"/>
+        </Border>
+        <ListBox ItemsSource="{Binding UpperRomListing}"
+                 SelectedIndex="{Binding SelectedUpperRomIndex}"
+                 AutoScrollToSelectedItem="True"
+                 FontFamily="Menlo,Monaco,'Courier New',monospace"
+                 FontSize="11"
+                 BorderThickness="0,0,1,0"
+                 BorderBrush="#20000000"
+                 Padding="4,2">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding AsmDescription}" Padding="0,1"/>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+
+      <!-- Register panel -->
+      <ScrollViewer Grid.Column="3" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Classes="registers" Margin="14,10" Spacing="10">
+
+          <!-- PC + frequency -->
+          <Grid ColumnDefinitions="38,*" RowDefinitions="Auto,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="PC" Opacity="0.5"/>
+            <TextBlock Grid.Row="0" Grid.Column="1"
+                       Text="{Binding Snapshot.Cpu.PC, Converter={StaticResource ShortHexValueConverter}}"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Freq" FontSize="10" Opacity="0.5"/>
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="2">
+              <TextBlock Text="{Binding Snapshot.FrequencyMHz, StringFormat={}{0:F2}}"/>
+              <TextBlock Text="MHz"/>
+            </StackPanel>
+          </Grid>
+
+          <Rectangle Height="1" Fill="#15000000"/>
+
+          <!-- Main register file -->
+          <StackPanel Spacing="6">
+            <TextBlock Text="REGISTERS" FontSize="10" FontWeight="SemiBold" Opacity="0.4"/>
+            <Grid ColumnDefinitions="22,38,22,52,30,48" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+              <TextBlock Grid.Row="0" Grid.Column="0" Text="A"   Opacity="0.5"/>
+              <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Snapshot.Cpu.A,   Converter={StaticResource ByteHexValueConverter}}"/>
+              <TextBlock Grid.Row="0" Grid.Column="2" Text="F"   Opacity="0.5"/>
+              <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding Snapshot.Cpu.Flags, Converter={StaticResource FlagsValueConverter}}"/>
+              <TextBlock Grid.Row="0" Grid.Column="4" Text="AF'" Opacity="0.5"/>
+              <TextBlock Grid.Row="0" Grid.Column="5" Text="{Binding Snapshot.Cpu.AF_, Converter={StaticResource ShortHexValueConverter}}"/>
+
+              <TextBlock Grid.Row="1" Grid.Column="0" Text="B"   Opacity="0.5"/>
+              <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Snapshot.Cpu.B,   Converter={StaticResource ByteHexValueConverter}}"/>
+              <TextBlock Grid.Row="1" Grid.Column="2" Text="C"   Opacity="0.5"/>
+              <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding Snapshot.Cpu.C,   Converter={StaticResource ByteHexValueConverter}}"/>
+              <TextBlock Grid.Row="1" Grid.Column="4" Text="BC'" Opacity="0.5"/>
+              <TextBlock Grid.Row="1" Grid.Column="5" Text="{Binding Snapshot.Cpu.BC_, Converter={StaticResource ShortHexValueConverter}}"/>
+
+              <TextBlock Grid.Row="2" Grid.Column="0" Text="D"   Opacity="0.5"/>
+              <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Snapshot.Cpu.D,   Converter={StaticResource ByteHexValueConverter}}"/>
+              <TextBlock Grid.Row="2" Grid.Column="2" Text="E"   Opacity="0.5"/>
+              <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding Snapshot.Cpu.E,   Converter={StaticResource ByteHexValueConverter}}"/>
+              <TextBlock Grid.Row="2" Grid.Column="4" Text="DE'" Opacity="0.5"/>
+              <TextBlock Grid.Row="2" Grid.Column="5" Text="{Binding Snapshot.Cpu.DE_, Converter={StaticResource ShortHexValueConverter}}"/>
+
+              <TextBlock Grid.Row="3" Grid.Column="0" Text="H"   Opacity="0.5"/>
+              <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Snapshot.Cpu.H,   Converter={StaticResource ByteHexValueConverter}}"/>
+              <TextBlock Grid.Row="3" Grid.Column="2" Text="L"   Opacity="0.5"/>
+              <TextBlock Grid.Row="3" Grid.Column="3" Text="{Binding Snapshot.Cpu.L,   Converter={StaticResource ByteHexValueConverter}}"/>
+              <TextBlock Grid.Row="3" Grid.Column="4" Text="HL'" Opacity="0.5"/>
+              <TextBlock Grid.Row="3" Grid.Column="5" Text="{Binding Snapshot.Cpu.HL_, Converter={StaticResource ShortHexValueConverter}}"/>
+
+              <TextBlock Grid.Row="4" Grid.Column="0" Text="I"   Opacity="0.5"/>
+              <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Snapshot.Cpu.I,   Converter={StaticResource ByteHexValueConverter}}"/>
+              <TextBlock Grid.Row="4" Grid.Column="2" Text="R"   Opacity="0.5"/>
+              <TextBlock Grid.Row="4" Grid.Column="3" Text="{Binding Snapshot.Cpu.R,   Converter={StaticResource ByteHexValueConverter}}"/>
+            </Grid>
+          </StackPanel>
+
+          <Rectangle Height="1" Fill="#15000000"/>
+
+          <!-- Index registers + SP -->
+          <Grid ColumnDefinitions="22,50" RowDefinitions="Auto,Auto,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="IX" Opacity="0.5"/>
+            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Snapshot.Cpu.IX, Converter={StaticResource ShortHexValueConverter}}"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="IY" Opacity="0.5"/>
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Snapshot.Cpu.IY, Converter={StaticResource ShortHexValueConverter}}"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="SP" Opacity="0.5"/>
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Snapshot.Cpu.SP, Converter={StaticResource ShortHexValueConverter}}"/>
+          </Grid>
+
+          <Rectangle Height="1" Fill="#15000000"/>
+
+          <!-- Stack -->
+          <StackPanel Spacing="4">
+            <TextBlock Text="STACK" FontSize="10" FontWeight="SemiBold" Opacity="0.4"/>
+            <ItemsControl ItemsSource="{Binding Snapshot.Stack}"
+                          FontFamily="Menlo,Monaco,'Courier New',monospace"
+                          FontSize="12">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Text="{Binding, Converter={StaticResource ShortHexValueConverter}}" Padding="0,1"/>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
+
+    <!-- Breakpoints bar -->
+    <Border Grid.Row="2" Padding="10,10" BorderThickness="0,1,0,0" BorderBrush="#20000000">
+      <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+        <TextBlock Text="BREAKPOINTS" FontSize="10" FontWeight="SemiBold" Opacity="0.4" VerticalAlignment="Center"/>
+        <TextBox Width="90" Text="{Binding NewBreakpointAddress}" Watermark="address" VerticalAlignment="Center"/>
+        <Button Command="{Binding AddBreakpoint}" Content="Add" Padding="10,4" VerticalAlignment="Center"/>
+        <Button Command="{Binding RemoveBreakpoint}" Content="Remove" Padding="10,4" VerticalAlignment="Center"/>
+        <ListBox ItemsSource="{Binding Breakpoints}"
+                 SelectedIndex="{Binding SelectedBreakpointIndex}"
+                 Height="100" Width="200"
+                 FontFamily="Menlo,Monaco,'Courier New',monospace"
+                 FontSize="11"
+                 VerticalAlignment="Center">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding Address, Converter={StaticResource ShortHexValueConverter}}"/>
+            </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
       </StackPanel>
-    </StackPanel>
+    </Border>
+
   </Grid>
 </Window>

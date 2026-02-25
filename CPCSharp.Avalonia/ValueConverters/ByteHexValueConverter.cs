@@ -11,7 +11,7 @@ namespace CPCSharp.App.ValueConverters {
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var byteValue = (byte)value;
+            var byteValue = System.Convert.ToByte(value);
             return $"0x{byteValue:x2}";
         }
 
