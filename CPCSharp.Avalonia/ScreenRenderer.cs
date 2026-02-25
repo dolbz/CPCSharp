@@ -74,7 +74,7 @@ namespace CPCSharp.App
         {
             foreach (var pixel in pixels)
             {
-                data[dataIndex++] = (int)Avalonia.Media.Color.FromRgb(pixel.R, pixel.G, pixel.B).ToUint32();
+                data[dataIndex++] = (int)Avalonia.Media.Color.FromRgb(pixel.R, pixel.G, pixel.B).ToUInt32();
             }
         }
 

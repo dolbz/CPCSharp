@@ -19,7 +19,7 @@ namespace CPCSharp.ViewModels
 
         public Window Window { get; set; }
 
-        private Bitmap _screenBitmap; 
+        private Bitmap _screenBitmap;
         public Bitmap ScreenBitmap
         {
             get => _screenBitmap;

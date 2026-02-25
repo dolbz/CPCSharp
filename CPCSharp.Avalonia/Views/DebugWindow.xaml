@@ -23,21 +23,21 @@
       <Button Command="{Binding MemoryView}" Width="50" Content="Memory View"/>
     </StackPanel>
     <StackPanel Orientation="Horizontal">
-      <ListBox Items="{Binding ProgramListing}" Width="300" SelectedIndex="{Binding SelectedRamIndex}" AutoScrollToSelectedItem="True">
+      <ListBox ItemsSource="{Binding ProgramListing}" Width="300" SelectedIndex="{Binding SelectedRamIndex}" AutoScrollToSelectedItem="True">
         <ListBox.ItemTemplate>
             <DataTemplate>
               <TextBlock Text="{Binding AsmDescription}" />
             </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
-      <ListBox Items="{Binding LowerRomListing}" Width="300" SelectedIndex="{Binding SelectedLowerRomIndex}" AutoScrollToSelectedItem="True">
+      <ListBox ItemsSource="{Binding LowerRomListing}" Width="300" SelectedIndex="{Binding SelectedLowerRomIndex}" AutoScrollToSelectedItem="True">
         <ListBox.ItemTemplate>
             <DataTemplate>
               <TextBlock Text="{Binding AsmDescription}" />
             </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
-      <ListBox Items="{Binding UpperRomListing}" Width="300" SelectedIndex="{Binding SelectedUpperRomIndex}" AutoScrollToSelectedItem="True">
+      <ListBox ItemsSource="{Binding UpperRomListing}" Width="300" SelectedIndex="{Binding SelectedUpperRomIndex}" AutoScrollToSelectedItem="True">
         <ListBox.ItemTemplate>
             <DataTemplate>
               <TextBlock Text="{Binding AsmDescription}" />
@@ -111,7 +111,7 @@
           </StackPanel>
         </StackPanel>
         <TextBlock Text="Stack: " />
-        <ItemsControl Items="{Binding Snapshot.Stack}">
+        <ItemsControl ItemsSource="{Binding Snapshot.Stack}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <StackPanel Orientation="Vertical"/>
@@ -133,7 +133,7 @@
           <Button Command="{Binding AddBreakpoint}" Width="50" Content="Add" />
           <Button Command="{Binding RemoveBreakpoint}" Width="50" Content="Remove" />
         </StackPanel>
-        <ListBox Items="{Binding Breakpoints}" SelectedIndex="{Binding SelectedBreakpointIndex}" Width="200" Height="300">
+        <ListBox ItemsSource="{Binding Breakpoints}" SelectedIndex="{Binding SelectedBreakpointIndex}" Width="200" Height="300">
           <ListBox.ItemTemplate>
               <DataTemplate>
                 <TextBlock Text="{Binding Address, Converter={StaticResource ShortHexValueConverter}}" />

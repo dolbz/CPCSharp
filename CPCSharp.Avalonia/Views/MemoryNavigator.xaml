@@ -15,7 +15,7 @@
     <conv:ShortHexValueConverter x:Key="ShortHexValueConverter" />
   </Window.Resources>
   <StackPanel Orientation="Vertical">
-    <ListBox FontFamily="Menlo, Monaco, 'Courier New', monospace" Items="{Binding RamListing}" Width="1000" SelectedIndex="{Binding SelectedRamIndex}" AutoScrollToSelectedItem="True">
+    <ListBox FontFamily="Menlo, Monaco, 'Courier New', monospace" ItemsSource="{Binding RamListing}" Width="1000" SelectedIndex="{Binding SelectedRamIndex}" AutoScrollToSelectedItem="True">
       <ListBox.ItemTemplate>
           <DataTemplate>
             <TextBlock Text="{Binding}" />

@@ -4,7 +4,6 @@
 // 
 using System.Drawing;
 using System;
-using System.Security;
 using CPCSharp.Core.Interfaces;
 
 namespace CPCSharp.Core {

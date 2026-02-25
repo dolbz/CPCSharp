@@ -18,12 +18,12 @@ jobs:
         with:
           target: PublishWindows
       - name: Rename executable
-        run: Rename-Item -Path "CPCSharp.Avalonia/bin/Release/net5.0-windows/win-x64/publish/CPCSharp.Avalonia.exe" -NewName "CPCSharp.exe"
+        run: Rename-Item -Path "CPCSharp.Avalonia/bin/Release/net10.0-windows/win-x64/publish/CPCSharp.Avalonia.exe" -NewName "CPCSharp.exe"
       - name: Publish artifacts
         uses: actions/upload-artifact@v2
         with:
           name: Windows Executable
-          path: CPCSharp.Avalonia/bin/Release/net5.0-windows/win-x64/publish/CPCSharp.exe
+          path: CPCSharp.Avalonia/bin/Release/net10.0-windows/win-x64/publish/CPCSharp.exe
   package-macos:
     runs-on: macos-latest
     steps:
@@ -36,19 +36,12 @@ jobs:
           p12-password: ${{ secrets.DEVELOPER_ID_CERTIFICATE_P12_PASSWORD }}
       - name: Cake publish script
         uses: cake-build/cake-action@v1
+        env: 
+          APPLE_ID: ${{ secrets.NOTARIZATION_USERNAME }}
+          APPLE_ID_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
+          APPLE_TEAM_ID: AJ9VCT4GE7
         with:
-          target: PublishMac
-      - name: "Notarize Release Build"
-        uses: devbotsxyz/xcode-notarize@v1
-        with:
-          product-path: BuildArtifacts/CPC#.app
-          appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
-          appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
-      - name: "Staple Release Build"
-        uses: devbotsxyz/xcode-staple@v1
-        with:
-          product-path: BuildArtifacts/CPC#.app
-          verbose: true
+          target: ExternalPublishMac
       - name: Zip App Bundle
         run: ditto -V -c -k --keepParent BuildArtifacts/CPC#.app BuildArtifacts/CPC#.zip
       - name: Publish artifacts

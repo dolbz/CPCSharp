@@ -99,7 +99,7 @@ namespace CPCSharp.App.Views
                 helpMenu.Menu = new NativeMenu();
 
                 var aboutCpcSharpItem = new NativeMenuItem("About CPC#");
-                aboutCpcSharpItem.Clicked += OpenAbout;
+                aboutCpcSharpItem.Click += OpenAbout;
 
                 helpMenu.Menu.Add(aboutCpcSharpItem);
                 menu.Add(helpMenu);

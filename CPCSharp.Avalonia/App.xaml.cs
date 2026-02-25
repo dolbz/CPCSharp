@@ -4,11 +4,12 @@
 //
 
 using System;
+using System.Diagnostics;
+using System.Threading;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using CPCSharp.App.PSG;
 using CPCSharp.App.Views;
 using CPCSharp.Core;
@@ -16,6 +17,7 @@ using CPCSharp.Core.PSG;
 using CPCSharp.ViewModels;
 using System.Linq;
 using System.Xml.Linq;
+using Avalonia.Controls;
 
 namespace CPCSharp.App
 {
@@ -27,8 +29,6 @@ namespace CPCSharp.App
         public override void Initialize()
         {
             Name = "CPC#";
-
-            var os = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().OperatingSystem;
 
             INativePSG psg;
 
@@ -58,8 +58,25 @@ namespace CPCSharp.App
             Runner = new CPCRunner(_renderer, psg);
             Runner.Initialize(ThreadRunMode.CycleCounted);
 
-            var renderLoop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            renderLoop.Add(new CPCRenderLoopTask(Runner));
+            var timingThread = new Thread(() =>
+            {
+                var sw = Stopwatch.StartNew();
+                var lastTime = sw.Elapsed;
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    var now = sw.Elapsed;
+                    var diff = now - lastTime;
+                    lastTime = now;
+
+                    // There are 10,000,000 ticks in a second
+                    // The CPC system clock is 16MHz so 16,000,000 clock pulses/second
+                    // To calculate clock cycles needed we can use 1.6 * elapsed ticks 
+                    // This might be slightly lossy as we don't adjust for rounding over time...
+                    Runner.DispatchCycleCountRequest((int)(1.6 * diff.Ticks));
+                }
+            }) { IsBackground = true };
+            timingThread.Start();
             
             var args = Environment.GetCommandLineArgs();
 

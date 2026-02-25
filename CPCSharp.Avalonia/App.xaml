@@ -1,10 +1,11 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:CPCSharp"
-             x:Class="CPCSharp.App.App">
+             x:Class="CPCSharp.App.App"
+             RequestedThemeVariant="Light">
     <NativeMenu.Menu>
         <NativeMenu>
-            <NativeMenuItem Header="About CPC#" Clicked="OpenAbout" />
+            <NativeMenuItem Header="About CPC#" Click="OpenAbout" />
             <!--<NativeMenuItemSeperator />
             <NativeMenuItem Header="Preferences..." Command="{Binding OpenPreferences}">
             </NativeMenuItem>-->
@@ -15,7 +16,6 @@
     </Application.DataTemplates>
 
     <Application.Styles>
-        <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml"/>
-        <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"/>
+        <FluentTheme />
     </Application.Styles>
 </Application>

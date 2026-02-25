@@ -49,7 +49,7 @@ namespace CPCSharp.Core
         private readonly CRTC _crtc;
         private readonly PPI _ppi;
         private readonly INativePSG _psg;
-        private PlayableTape _tape;
+        private PlayableTape? _tape;
         private List<IODevice> _ioDevices = new List<IODevice>();
 
         private AutoResetEvent _uiCompleteSignal = new AutoResetEvent(false);
@@ -134,7 +134,7 @@ namespace CPCSharp.Core
             LoadROMs();
             SetupIODevices();
             
-            ThreadStart work = null;
+            ThreadStart? work = null;
             switch(threadStyle) {
                 case ThreadRunMode.Continuous:
                     work = RunContinous;
@@ -210,7 +210,7 @@ namespace CPCSharp.Core
             var offset = 0;
             var assembly = typeof(CPCRunner).GetTypeInfo().Assembly;
 
-            using (var romStream = assembly.GetManifestResourceStream("CPCSharp.Core.OS_464.ROM"))
+            using (var romStream = assembly.GetManifestResourceStream("CPCSharp.Core.OS_464.ROM") ?? throw new InvalidOperationException("Unable to load OS 464 ROM"))
             {
                 while (offset < romStream.Length)
                 {
@@ -222,7 +222,7 @@ namespace CPCSharp.Core
             _lowerRomDisassembly = Disassemble(0, _lowerRom);
 
             offset = 0;
-            using (var romStream = assembly.GetManifestResourceStream("CPCSharp.Core.BASIC_1.0.ROM"))
+            using (var romStream = assembly.GetManifestResourceStream("CPCSharp.Core.BASIC_1.0.ROM") ?? throw new InvalidOperationException("Unable to load BASIC ROM"))
             {
                 while (offset < romStream.Length)
                 {
@@ -270,7 +270,7 @@ namespace CPCSharp.Core
             _ioDevices.Add(_ppi);
         }
 
-        private IODevice GetIoDeviceForAddress(ushort address)
+        private IODevice? GetIoDeviceForAddress(ushort address)
         {
             foreach (var device in _ioDevices)
             {
@@ -421,7 +421,7 @@ namespace CPCSharp.Core
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CheckBreakpoints() {
-            CPCBreakpoint bpToRemove = null;
+            CPCBreakpoint? bpToRemove = null;
             foreach (var bp in _breakPoints)
             {
                 if (bp.Hit(GetStateSnapshot()))
