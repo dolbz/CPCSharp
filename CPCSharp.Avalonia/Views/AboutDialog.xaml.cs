@@ -3,7 +3,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.  
 // 
 using System.Reflection;
-using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
@@ -13,7 +12,7 @@ namespace CPCSharp.App.Views
 {
     public class AboutDialog : Window
     {
-        private static string Version { get; } = typeof(AboutDialog).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+        public static string Version { get; } = typeof(AboutDialog).Assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "Unknown";
 
         public AboutDialog()
         {
@@ -41,13 +40,13 @@ namespace CPCSharp.App.Views
             }
             else
             {
-                using (Process process = Process.Start(new ProcessStartInfo
+                using var process = Process.Start(new ProcessStartInfo
                 {
                     FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url : "open",
                     Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"{url}" : "",
                     CreateNoWindow = true,
                     UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                }));
+                });
             }
         }
 
@@ -55,7 +54,7 @@ namespace CPCSharp.App.Views
         {
             var escapedArgs = cmd.Replace("\"", "\\\"");
 
-            using (var process = Process.Start(
+            using var process = Process.Start(
                 new ProcessStartInfo
                 {
                     FileName = "/bin/sh",
@@ -65,12 +64,11 @@ namespace CPCSharp.App.Views
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden
                 }
-            ))
+            );
+            
+            if (waitForExit)
             {
-                if (waitForExit)
-                {
-                    process.WaitForExit();
-                }
+                process?.WaitForExit();
             }
         }
     }

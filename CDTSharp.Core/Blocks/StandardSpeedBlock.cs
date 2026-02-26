@@ -6,7 +6,7 @@ using System;
 
 namespace CDTSharp.Core.Blocks
 {
-    public class StandardSpeedBlock : IBlock
+    internal class StandardSpeedBlock : IBlock
     {
         public string Description { 
             get 
@@ -22,6 +22,6 @@ namespace CDTSharp.Core.Blocks
 
         public int PauseLengthAfterBlock { get; internal set; }
         public int LengthOfBlockData { get; internal set; }
-        public byte[] Data { get; internal set; }
+        public required byte[] Data { get; internal set; }
     }
 }

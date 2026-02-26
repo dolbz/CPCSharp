@@ -14,11 +14,10 @@ namespace CPCSharp.ViewModels
     public class MemoryNavigatorViewModel : ViewModelBase {
         private byte[] _ram;
 
-        private List<string> _ramListing;
         public List<string> RamListing {
-            get => _ramListing;
-            private set => this.RaiseAndSetIfChanged(ref _ramListing, value);
-        }
+            get => field;
+            private set => this.RaiseAndSetIfChanged(ref field, value);
+        } = [];
 
         private Task _populateListingTask;
 

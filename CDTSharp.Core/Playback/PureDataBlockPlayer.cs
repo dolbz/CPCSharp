@@ -20,7 +20,6 @@ namespace CDTSharp.Core.Playback
         private PureDataBlockPlaybackState _playbackState = PureDataBlockPlaybackState.DataPulse1;
         private int _currentPulseCount;
         private int _currentDataPulseLength;
-        private int _pilotPulsesCompletedCount;
 
         private int _dataIndex;
         private int _currentBit;

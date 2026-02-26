@@ -95,8 +95,16 @@ namespace CPCSharp.App.Views
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 var menu = NativeMenu.GetMenu(this);
-                var helpMenu = new NativeMenuItem("Help");
-                helpMenu.Menu = new NativeMenu();
+                if (menu is null)
+                {
+                    Console.WriteLine("Failed to get window menu");
+                    return;
+                }
+
+                var helpMenu = new NativeMenuItem("Help")
+                {
+                    Menu = new NativeMenu()
+                };
 
                 var aboutCpcSharpItem = new NativeMenuItem("About CPC#");
                 aboutCpcSharpItem.Click += OpenAbout;
@@ -106,13 +114,13 @@ namespace CPCSharp.App.Views
             }
         }
 
-        public void OpenAbout(object sender, EventArgs args)
+        public void OpenAbout(object? sender, EventArgs args)
         {
             var dialog = new AboutDialog();
             dialog.ShowDialog(this);
         }
 
-        private MainWindowViewModel ViewModel => (MainWindowViewModel)DataContext;
+        private MainWindowViewModel ViewModel => DataContext as MainWindowViewModel ?? throw new InvalidOperationException("DataContext is incorrect type");
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
@@ -156,7 +164,7 @@ namespace CPCSharp.App.Views
 
         public void OpenDebuggerClicked(object sender, EventArgs args)
         {
-            var runner = ((App)App.Current).Runner;
+            var runner = (Application.Current as App)?.Runner ?? throw new InvalidOperationException("Application instance of incorrect type");
 
             var debugWindow = new DebugWindow {
                 DataContext = new DebugWindowViewModel(runner)
@@ -164,7 +172,7 @@ namespace CPCSharp.App.Views
             debugWindow.Show();
         }
 
-        void MainWindow_KeyDown(object sender, KeyEventArgs e) {
+        void MainWindow_KeyDown(object? sender, KeyEventArgs e) {
             Console.WriteLine("Down:" + e.Key.ToString());
             Console.WriteLine("Key Mod: " + e.KeyModifiers);
             if (e.KeyModifiers.HasFlag(KeyModifiers.Alt)) {
@@ -233,7 +241,7 @@ namespace CPCSharp.App.Views
             });
         }
 
-        void MainWindow_KeyUp(object sender, KeyEventArgs e) {
+        void MainWindow_KeyUp(object? sender, KeyEventArgs e) {
             Console.WriteLine("Up: " + e.Key.ToString());
             Console.WriteLine("Key Mod: " + e.KeyModifiers);
             

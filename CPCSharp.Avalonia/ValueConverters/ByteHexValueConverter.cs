@@ -9,13 +9,13 @@ using Avalonia.Data.Converters;
 namespace CPCSharp.App.ValueConverters {
     public class ByteHexValueConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             var byteValue = System.Convert.ToByte(value);
             return $"0x{byteValue:x2}";
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

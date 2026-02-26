@@ -19,7 +19,7 @@ namespace CDTSharp.Core.Blocks
         public int PauseLengthAfterBlock { get; init; }
         public int LengthOfBlockData { get; init; }
 
-        public byte[] Data { get; init; }
+        public required byte[] Data { get; init; }
 
         private string BlockType {
             get {

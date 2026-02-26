@@ -28,10 +28,10 @@
     <NSPrincipalClass>NSApplication</NSPrincipalClass>
     <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
     <NSHighResolutionCapable>true</NSHighResolutionCapable>
+    <!--<PublishSingleFile>true</PublishSingleFile>-->
     <SelfContained>true</SelfContained>
     <PublishTrimmed>false</PublishTrimmed>
     <PublishReadyToRun>false</PublishReadyToRun>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
   <Choose>
     <When Condition="'$(BuildVersion)'!=''">
@@ -48,6 +48,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <ApplicationIcon>Assets/appicon.ico</ApplicationIcon>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Models\" />

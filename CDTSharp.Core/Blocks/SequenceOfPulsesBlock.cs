@@ -6,7 +6,7 @@ using System.Linq;
 namespace CDTSharp.Core.Blocks
 {
     public class SequenceOfPulsesBlock : IBlock {
-        public int[] PulseLengths { get; set; }
+        public required int[] PulseLengths { get; set; }
 
         public string Description { 
             get 

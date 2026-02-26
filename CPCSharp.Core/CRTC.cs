@@ -19,8 +19,6 @@ namespace CPCSharp.Core {
         public bool DISP { get; set; }
 
         private int _clockCyclesThisLine;
-        private int _numberOfLines;
-        private int _currentMemoryAddress;
         private int _horizontalSyncPosition;
         private int _hsyncWidth = 14; // TODO extract this and VSYNC width from register value
 

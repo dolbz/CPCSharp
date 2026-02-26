@@ -44,10 +44,12 @@ namespace CDTSharp.Core
                     Console.WriteLine($"Found block with ID: 0x{blockId:x2}");
 
                     var blockReader = BlockReaderLookup(blockId);
-                    var block = blockReader.ReadBlock(fileStream);
-                    blocks.Add(block);
-                    Console.WriteLine(block.Description);
-                    Console.WriteLine();
+                    if (blockReader is not null) {
+                        var block = blockReader.ReadBlock(fileStream);
+                        blocks.Add(block);
+                        Console.WriteLine(block.Description);
+                        Console.WriteLine();
+                    }
                 }
 
                 return new CDTFile(
@@ -57,8 +59,8 @@ namespace CDTSharp.Core
             }
         }
 
-        private static IBlockReader BlockReaderLookup(int blockId) {
-            var blockReader = blockReaders.Where(x => x.BlockId == blockId).SingleOrDefault();
+        private static IBlockReader? BlockReaderLookup(int blockId) {
+            var blockReader = blockReaders.SingleOrDefault(x => x.BlockId == blockId);
 
             if (blockReader == null) {
                 Console.WriteLine($"No available block reader for block ID 0x{blockId:x2}");

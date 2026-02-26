@@ -6,7 +6,7 @@ using CDTSharp.Core.Blocks;
 
 namespace CDTSharp.Core.Playback
 {
-    public class StandardSpeedBlockPlayer : IBlockPlayer {
+    internal class StandardSpeedBlockPlayer : IBlockPlayer {
         private readonly StandardBlockPlayer _player;
         public StandardSpeedBlockPlayer(StandardSpeedBlock block, bool initialState) {
             

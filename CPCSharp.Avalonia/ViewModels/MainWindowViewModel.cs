@@ -8,6 +8,7 @@ using CPCSharp.Core;
 using ReactiveUI;
 using CPCSharp.App;
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using System.Collections.Generic;
 
 namespace CPCSharp.ViewModels
@@ -17,10 +18,10 @@ namespace CPCSharp.ViewModels
         private readonly CPCRunner _runner;
         private readonly ScreenRenderer _renderer;
 
-        public Window Window { get; set; }
+        public Window? Window { get; set; }
 
-        private Bitmap _screenBitmap;
-        public Bitmap ScreenBitmap
+        private Bitmap? _screenBitmap;
+        public Bitmap? ScreenBitmap
         {
             get => _screenBitmap;
             private set => this.RaiseAndSetIfChanged(ref _screenBitmap, value);
@@ -47,19 +48,20 @@ namespace CPCSharp.ViewModels
         }
 
         public async void LoadTape() {
-            var openDialog = new OpenFileDialog()
+            var storageProvider = (Window ?? throw new InvalidOperationException("Window property accessed before it has been set")).StorageProvider;
+
+            var files = await storageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 Title = "Open file",
-                Filters = new List<FileDialogFilter> {
-                    new FileDialogFilter { Name = "CDT Files", Extensions = new List<string> { "cdt" } }
+                FileTypeFilter = new List<FilePickerFileType> {
+                    new FilePickerFileType("CDT Files") { Patterns = new List<string> { "*.cdt" } }
                 }
-            };
-                
-            var chosenFile = await openDialog.ShowAsync(Window);
-            
-            if (chosenFile.Length > 0) {
-                Console.WriteLine($"Chose file {chosenFile[0]}");
-                _runner.LoadTape(chosenFile[0]);
+            });
+
+            if (files?.Count > 0) {
+                var path = files[0].Path.LocalPath;
+                Console.WriteLine($"Chose file {path}");
+                _runner.LoadTape(path);
             }
         }
 

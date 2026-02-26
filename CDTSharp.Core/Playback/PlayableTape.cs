@@ -8,7 +8,7 @@ namespace CDTSharp.Core.Playback
         private readonly CDTFile _fileData;
 
         private int _blockIndex = -1;
-        private IBlockPlayer _currentBlockPlayer;
+        private IBlockPlayer? _currentBlockPlayer;
 
         private bool _currentState = false;
 

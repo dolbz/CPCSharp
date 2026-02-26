@@ -8,7 +8,7 @@ using CDTSharp.Core.Blocks;
 namespace CDTSharp.Core.Playback
 {
     public static class BlockExtensions {
-        public static IBlockPlayer CreateBlockPlayer(this IBlock block, bool initialState) {
+        public static IBlockPlayer? CreateBlockPlayer(this IBlock block, bool initialState) {
             switch (block) {
                 case TurboLoadingBlock tb:
                     return new TurboLoadingBlockPlayer(tb, initialState);

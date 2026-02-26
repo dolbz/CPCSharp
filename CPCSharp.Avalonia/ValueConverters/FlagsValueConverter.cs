@@ -6,9 +6,9 @@ using Z80;
 namespace CPCSharp.App.ValueConverters {
     public class FlagsValueConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            var flags = (Z80Flags)value;
+            var flags = value is null ? 0 : (Z80Flags)value;
             return string.Concat(
                 flags.HasFlag(Z80Flags.Sign_S)              ? "S" : "·",
                 flags.HasFlag(Z80Flags.Zero_Z)              ? "Z" : "·",
@@ -19,7 +19,7 @@ namespace CPCSharp.App.ValueConverters {
             );
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

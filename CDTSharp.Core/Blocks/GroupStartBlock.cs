@@ -6,7 +6,7 @@ using System.Linq;
 namespace CDTSharp.Core.Blocks
 {
     public class GroupStartBlock : IBlock {
-        public string GroupName { get; init; }
+        public required string GroupName { get; init; }
 
         public string Description { 
             get 

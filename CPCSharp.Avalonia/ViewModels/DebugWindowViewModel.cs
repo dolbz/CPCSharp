@@ -17,65 +17,56 @@ using CPCSharp.App.Models;
 namespace CPCSharp.ViewModels
 {
     public class ProgramListingEntry {
-        public string AsmDescription { get; set; }
+        public required string AsmDescription { get; set; }
     }
 
     public class DebugWindowViewModel : ViewModelBase, INotifyPropertyChanged {
         private CPCRunner _runner;
 
-        private List<ProgramListingEntry> _programListing;
         public List<ProgramListingEntry> ProgramListing {
-            get => _programListing;
-            set => this.RaiseAndSetIfChanged(ref _programListing, value);
-        }
+            get => field;
+            set => this.RaiseAndSetIfChanged(ref field, value);
+        } = [];
 
-        private List<ProgramListingEntry> _lowerRomListing;
         public List<ProgramListingEntry> LowerRomListing {
-            get => _lowerRomListing;
-            set => this.RaiseAndSetIfChanged(ref _lowerRomListing, value);
-        }
+            get => field;
+            set => this.RaiseAndSetIfChanged(ref field, value);
+        } = [];
 
-        private List<ProgramListingEntry> _upperRomListing;
         public List<ProgramListingEntry> UpperRomListing {
-            get => _upperRomListing;
-            set => this.RaiseAndSetIfChanged(ref _upperRomListing, value);
-        }
+            get => field;
+            set => this.RaiseAndSetIfChanged(ref field, value);
+        } = [];
 
-        private int _selectedLowerRomIndex;
         private int SelectedLowerRomIndex {
-            get => _selectedLowerRomIndex;
-            set => this.RaiseAndSetIfChanged(ref _selectedLowerRomIndex, value);
+            get => field;
+            set => this.RaiseAndSetIfChanged(ref field, value);
         }
 
-        private int _selectedUpperRomIndex;
         private int SelectedUpperRomIndex {
-            get => _selectedUpperRomIndex;
-            set => this.RaiseAndSetIfChanged(ref _selectedUpperRomIndex, value);
+            get => field;
+            set => this.RaiseAndSetIfChanged(ref field, value);
         }
 
-        private int _selectedRamIndex;
         private int SelectedRamIndex {
-            get => _selectedRamIndex;
-            set => this.RaiseAndSetIfChanged(ref _selectedRamIndex, value);
+            get => field;
+            set => this.RaiseAndSetIfChanged(ref field, value);
         }
 
-        private int _selectedBreakpointIndex = -1;
         private int SelectedBreakpointIndex {
-            get => _selectedBreakpointIndex;
-            set => this.RaiseAndSetIfChanged(ref _selectedBreakpointIndex, value);
+            get => field;
+            set => this.RaiseAndSetIfChanged(ref field, value);
+        } = -1;
+
+        public string? NewBreakpointAddress {
+            get => field;
+            set => this.RaiseAndSetIfChanged(ref field, value);
         }
 
-        private string _newBreakpointAddress;
-        public string NewBreakpointAddress {
-            get => _newBreakpointAddress;
-            set => this.RaiseAndSetIfChanged(ref _newBreakpointAddress, value);
-        }
-
-        private List<Breakpoint> _breakpoints = new List<Breakpoint>();
         public List<Breakpoint> Breakpoints {
-            get => _breakpoints;
-            set => this.RaiseAndSetIfChanged(ref _breakpoints, value);
-        }  
+            get => field;
+            set => this.RaiseAndSetIfChanged(ref field, value);
+        } = [];  
 
         private MachineStateSnapshot _snapshot;
         public MachineStateSnapshot Snapshot { 
@@ -107,7 +98,7 @@ namespace CPCSharp.ViewModels
         }
 
         public void AddBreakpoint() {
-            var cleanValue = (_newBreakpointAddress ?? string.Empty).Trim().Replace("0x", string.Empty);
+            var cleanValue = (NewBreakpointAddress ?? string.Empty).Trim().Replace("0x", string.Empty);
 
             if (cleanValue.Length <= 4) {
                 ushort bpAddress;
@@ -146,12 +137,12 @@ namespace CPCSharp.ViewModels
             }.Show();
         }
 
-        private void OnUpdate(object sender, ElapsedEventArgs elapsedEventArgs)
+        private void OnUpdate(object? sender, ElapsedEventArgs elapsedEventArgs)
         {
             var snapshot = _runner.GetStateSnapshot();
             Snapshot = snapshot;
 
-            if (LowerRomListing == null) {
+            if (LowerRomListing.Count == 0) {
                 LowerRomListing = snapshot.LowerRomProgramListing.Select(x => new ProgramListingEntry{ AsmDescription = x}).ToList();
                 UpperRomListing = snapshot.UpperRomProgramListing.Select(x => new ProgramListingEntry{ AsmDescription = x}).ToList();
             }

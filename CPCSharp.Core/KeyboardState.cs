@@ -78,7 +78,6 @@ namespace CPCSharp.Core {
     }
 
     public class KeyboardState {
-        private static KeyboardState instance = null;
         private static readonly object padlock = new object();
 
         private byte[] keyLines = new byte[10];
@@ -90,20 +89,7 @@ namespace CPCSharp.Core {
             }
         }
 
-        public static KeyboardState Instance
-        {
-            get
-            {
-                lock (padlock)
-                {
-                    if (instance == null)
-                    {
-                        instance = new KeyboardState();
-                    }
-                    return instance;
-                }
-            }
-        }
+        public static KeyboardState Instance { get; } = new KeyboardState();
 
         public byte KeyStateForLine(int lineNumber) {
             return keyLines[lineNumber];

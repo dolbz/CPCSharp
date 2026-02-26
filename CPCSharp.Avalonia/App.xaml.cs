@@ -9,7 +9,6 @@ using System.Threading;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.Platform;
 using CPCSharp.App.PSG;
 using CPCSharp.App.Views;
 using CPCSharp.Core;
@@ -23,8 +22,15 @@ namespace CPCSharp.App
 {
     public class App : Application
     {
-        public CPCRunner Runner { get; private set; }
-        private ScreenRenderer _renderer;
+        public CPCRunner Runner { 
+            get => field ?? throw new InvalidOperationException("Runner accessed before it has been set"); 
+            private set; 
+        }
+
+        private ScreenRenderer Renderer {
+            get => field ?? throw new InvalidOperationException("Renderer accessed before it has been set");  
+            set; 
+        }
 
         public override void Initialize()
         {
@@ -52,10 +58,10 @@ namespace CPCSharp.App
             psg = new DefaultPSG();
 #endif
 
-            _renderer = new ScreenRenderer();
+            Renderer = new ScreenRenderer();
             AvaloniaXamlLoader.Load(this);
             
-            Runner = new CPCRunner(_renderer, psg);
+            Runner = new CPCRunner(Renderer, psg);
             Runner.Initialize(ThreadRunMode.CycleCounted);
 
             var timingThread = new Thread(() =>
@@ -89,7 +95,7 @@ namespace CPCSharp.App
                 }
             }
 
-            if (Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
+            if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
             {
                 desktopLifetime.Exit += OnExit;
             }
@@ -99,11 +105,11 @@ namespace CPCSharp.App
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
                 var dialog = new AboutDialog();
-                dialog.ShowDialog(desktop.MainWindow);
+                dialog.ShowDialog(desktop.MainWindow ?? throw new InvalidOperationException("No main window on desktop instance"));
             }
         }
 
-        private void OnExit(object sender, ControlledApplicationLifetimeExitEventArgs e)
+        private void OnExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
         {
             Runner.Shutdown();
         }
@@ -114,7 +120,7 @@ namespace CPCSharp.App
             {
                 desktop.MainWindow = new MainWindow
                 {
-                    DataContext = new MainWindowViewModel(Runner, _renderer),
+                    DataContext = new MainWindowViewModel(Runner, Renderer),
                 };
             }
 

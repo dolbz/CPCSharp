@@ -19,7 +19,7 @@ namespace CPCSharp.App
         public WriteableBitmap ScreenBuffer { get; set; }
         private int[] data = new int[832 * 600]; // 832x288 Resolution is max possible so we've got enough memory in all cases without reallocating
 
-        private Action _screenCompleteCallBack;
+        private Action? _screenCompleteCallBack;
 
         public System.Drawing.Size ScreenDimensions { get; private set; }
 
